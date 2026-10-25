@@ -1,0 +1,43 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://jitpack.io' }
+    }
+}
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.10.0'
+}
+
+try {
+    def env = System.getenv()
+    def field = env.getClass().getDeclaredField("m")
+    field.setAccessible(true)
+    ((Map) field.get(env)).remove("ANDROID_PREFS_ROOT")
+} catch (Exception e) {}
+try {
+    def pe = Class.forName("java.lang.ProcessEnvironment")
+    def field = pe.getDeclaredField("theCaseInsensitiveEnvironment")
+    field.setAccessible(true)
+    ((Map) field.get(null)).remove("ANDROID_PREFS_ROOT")
+} catch (Exception e) {}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = "Scroll Break"
+include ':app'
+

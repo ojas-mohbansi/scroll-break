@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Permission to draw over other apps (for overlay) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Optional feature for compatibility -->
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:name=".ScrollBreakApp"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NoScroll"
+        tools:targetApi="31">
+
+        <!-- Samsung Now Bar / Ongoing Activity Support -->
+        <meta-data
+            android:name="com.samsung.android.support.ongoing_activity"
+            android:value="true" />
+
+        <activity
+            android:name=".Activities.FocusMode"
+            android:exported="false" />
+        <activity
+            android:name=".Activities.AttentionShopActivity"
+            android:exported="false"
+            android:label="Attention shop" />
+        <activity
+            android:name=".Activities.HomeActivity"
+            android:launchMode="singleTask"
+            android:exported="false" />
+        <activity
+            android:name=".Activities.BlockerControlActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NoScroll" />
+        <activity
+            android:name=".Activities.OnBoarding"
+            android:exported="true"
+            android:theme="@style/Theme.MyApp.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".Activities.CustomAppSelectionActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".Activities.SiteBlockerActivity"
+            android:exported="false"
+            android:label="Site blocker" />
+
+        <activity
+            android:name=".Activities.BlockingOverlayDisplayActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/Theme.ScrollBreak.TransparentOverlay" />
+            
+        <activity
+            android:name=".Activities.LockChallengeActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@style/Theme.NoScroll"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.HabitCreateActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.StatsActivity" />
+        <activity android:name=".Activities.AnalyticsActivity" android:exported="false" />
+        <activity
+            android:name=".Activities.ScrollInterventionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.NoScroll" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.HabitStatActivity" />
+        
+        <!-- Transparent activity for widget quick add task -->
+        <activity
+            android:name=".Activities.WidgetQuickAddActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.ScrollBreak.TransparentOverlay"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".Activities.WidgetActionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ScrollBreak.TransparentOverlay"
+            android:windowSoftInputMode="adjustResize" />
+
+        <receiver
+            android:name=".Widgets.HabitListWidgetProvider"
+            android:label="@string/widget_habits_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.cascade26.scrollbreak.ACTION_WIDGET_CLICK" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_habit_list_info" />
+        </receiver>
+
+        <service
+            android:name=".Widgets.HabitListService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <service
+            android:name=".Services.AppUsageAccessibilityService"
+            android:canRetrieveWindowContent="true"
+            android:exported="true"
+            android:foregroundServiceType="specialUse"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <!-- Accessibility service metadata -->
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Notification dismiss receiver to rebuild guard notification -->
+        <receiver
+            android:name=".Receivers.NotificationDismissBroadcastReceiver"
+            android:exported="false" />
+
+        <!-- Boot/package update receiver to restart services -->
+        <receiver
+            android:name=".Receivers.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".Services.FocusService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-initiated productivity timer service that provides continuous time tracking and notifications during focus sessions. The service must remain active to accurately track session duration, display remaining time in notifications, and maintain timer state across app lifecycle changes. Sessions are user-controlled and range from 10 to 180 minutes." />
+        </service>
+
+        <receiver
+            android:name=".Receivers.MidnightResetReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.cascade26.scrollbreak.RESET_APP_TIMES" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".Receivers.ServiceResumeReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".Receivers.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".Receivers.TaskReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".Receivers.FocusScheduleAlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.cascade26.scrollbreak.action.CANCEL_SCHEDULE_FIRE" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.cascade26.scrollbreak.Receivers.AccessibilityCheckReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".Widgets.TasksWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_tasks_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.cascade26.scrollbreak.ACTION_TOGGLE_TASK" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tasks_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".Widgets.TasksWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver
+            android:name=".Widgets.FocusTimerWidgetProvider"
+            android:label="@string/widget_focus_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_focus_timer_info" />
+        </receiver>
+
+        <receiver
+            android:name=".Widgets.ScreenTimeWidgetProvider"
+            android:label="@string/widget_screen_time_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.cascade26.scrollbreak.SCROLL_BREAK_APP_USAGE_TIME_UPDATED_ACTION" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_screen_time_info" />
+        </receiver>
+
+        <receiver
+            android:name=".Widgets.PomodoroTimerWidgetProvider"
+            android:label="@string/widget_pomodoro_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_pomodoro_timer_info" />
+        </receiver>
+
+        <!-- Android requires this admin component to be exported to bind the system admin UI. -->
+        <receiver
+            android:name=".Receivers.ScrollBreakDeviceAdminReceiver"
+            android:description="@string/device_admin_description"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+
+    </application>
+
+</manifest>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

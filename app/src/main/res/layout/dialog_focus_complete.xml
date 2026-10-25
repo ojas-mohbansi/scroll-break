@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardBackgroundColor="?attr/surface_card"
+    app:cardCornerRadius="@dimen/component_corner_radius"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Lottie sparkle ring + currencyMark stacked in a FrameLayout -->
+        <FrameLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginBottom="8dp">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/sparkleAnim"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:lottie_loop="true" />
+
+            <ImageView
+                android:id="@+id/currencyMarkImage"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                android:rotation="15"
+                android:src="@drawable/attention_currency" />
+
+        </FrameLayout>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="CONGRATULATIONS!"
+            android:textAllCaps="true"
+            android:textColor="?attr/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Desc (e.g. "Focus complete: 25 min") -->
+        <TextView
+            android:id="@+id/descText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Focus complete"
+            android:textColor="?attr/text_secondary"
+            android:textSize="15sp" />
+
+        <!-- Coins badge -->
+        <TextView
+            android:id="@+id/coinsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rounded_bg"
+            android:backgroundTint="?attr/glass_circle"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
+            android:text="+0 Attention Currency"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- OK button — matches dialog_custom_confirm btnConfirm style -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/okBtn"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="?attr/text_primary"
+            android:text="Awesome!"
+            android:textAllCaps="false"
+            android:textColor="?attr/surface_card"
+            android:textSize="16sp"
+            app:cornerRadius="@dimen/control_corner_radius" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

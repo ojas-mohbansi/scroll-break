@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_sheet_panel"
+    android:padding="20dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter18regular"
+        android:text="Select time"
+        android:textColor="?attr/tintGlobalColor"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Digital Time Display -->
+    <LinearLayout
+        android:id="@+id/digitalTimeDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleText">
+
+        <!-- Hour Display -->
+        <TextView
+            android:id="@+id/hourDisplay"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:background="@drawable/time_picker_selected_bg"
+            android:fontFamily="@font/inter18regular"
+            android:gravity="center"
+            android:text="09"
+            android:textColor="?attr/tintGlobalColor"
+            android:textSize="32sp" />
+
+        <!-- Separator -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:fontFamily="@font/inter18regular"
+            android:text=":"
+            android:textColor="?attr/tintGlobalColor"
+            android:textSize="32sp" />
+
+        <!-- Minute Display -->
+        <TextView
+            android:id="@+id/minuteDisplay"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:background="@drawable/background_outline"
+            android:fontFamily="@font/inter18regular"
+            android:gravity="center"
+            android:text="00"
+            android:textColor="?attr/tintGlobalColor"
+            android:textSize="32sp" />
+
+        <!-- AM/PM Toggle -->
+        <LinearLayout
+            android:id="@+id/amPmToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/amButton"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:background="@drawable/background_outline"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/inter18regular"
+                android:gravity="center"
+                android:text="a.m."
+                android:textColor="?attr/tintGlobalColor"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/pmButton"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/time_picker_selected_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/inter18regular"
+                android:gravity="center"
+                android:text="p.m."
+                android:textColor="?attr/tintGlobalColor"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Analog Clock -->
+    <FrameLayout
+        android:id="@+id/analogClockContainer"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/digitalTimeDisplay">
+
+        <!-- Clock Background Circle -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/clock_background" />
+
+        <!-- Custom Clock View -->
+        <com.cascade26.scrollbreak.Views.AnalogClockView
+            android:id="@+id/analogClock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/analogClockContainer">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_brand_gradient"
+            android:fontFamily="@font/inter18regular"
+            android:text="@string/cancel"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/okButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_brand_gradient"
+            android:fontFamily="@font/inter18regular"
+            android:text="@string/ok"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

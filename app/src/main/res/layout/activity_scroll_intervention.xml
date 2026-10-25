@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/app_bg"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="28dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="@string/scroll_pause_label" android:textAllCaps="true"
+            android:textColor="?attr/brand_accent_light" android:textSize="12sp" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:gravity="center"
+            android:text="@string/scroll_pause_title" android:textColor="?attr/text_primary"
+            android:textSize="30sp" android:fontFamily="@font/inter18regular" />
+        <TextView android:id="@+id/interventionAppName" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center"
+            android:textColor="?attr/text_tertiary" android:textSize="16sp" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="28dp" android:hint="@string/scroll_intent_hint"
+            app:boxBackgroundColor="?attr/surface_card" app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/component_corner_radius"
+            app:boxCornerRadiusBottomStart="@dimen/component_corner_radius"
+            app:boxCornerRadiusTopEnd="@dimen/component_corner_radius"
+            app:boxCornerRadiusTopStart="@dimen/component_corner_radius">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/declaredIntentInput" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:importantForAutofill="no"
+                android:inputType="textCapSentences" android:maxLength="120"
+                android:maxLines="2" android:textColor="?attr/text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/scroll_intent_optional"
+            android:textColor="?attr/text_tertiary" android:textSize="12sp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/interventionDone"
+            android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="28dp"
+            android:text="@string/scroll_exit_app" android:textAllCaps="false"
+            app:backgroundTint="?attr/brand_accent" app:cornerRadius="@dimen/component_corner_radius" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/interventionContinue"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="12dp"
+            android:text="@string/scroll_continue" android:textAllCaps="false"
+            app:cornerRadius="@dimen/component_corner_radius" />
+    </LinearLayout>
+</ScrollView>

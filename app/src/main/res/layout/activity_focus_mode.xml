@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/mainBgColor"
+    tools:ignore="ContentDescription">
+
+    <com.cascade26.scrollbreak.Views.NebulaStarfieldView
+        android:id="@+id/starFieldView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="46dp"
+        android:background="@color/transparent"
+        android:elevation="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/attentionCurrencyIcon"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="20dp"
+            android:elevation="2dp"
+            android:src="@drawable/attention_currency"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/attentionCurrency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-20dp"
+            android:alpha="0.8"
+            android:background="@drawable/pill_bg"
+            android:backgroundTint="?attr/surface_card"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/demo_coin"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@+id/attentionCurrencyIcon"
+            app:layout_constraintStart_toEndOf="@+id/attentionCurrencyIcon"
+            app:layout_constraintTop_toTopOf="@+id/attentionCurrencyIcon" />
+
+        <ImageView
+            android:id="@+id/settingsBtn"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginEnd="20dp"
+            android:padding="10dp"
+            android:src="@drawable/settings"
+            app:tint="?attr/tintGlobalColor"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/progressContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center"
+            app:lottie_autoPlay="true"
+            app:lottie_fileName="attention_currency.json"
+            app:lottie_loop="true" />
+
+        <me.tankery.lib.circularseekbar.CircularSeekBar
+            android:id="@+id/circularProgress"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center"
+            app:cs_circle_color="@color/sexyGrey"
+            app:cs_circle_progress_color="@color/brainColor"
+            app:cs_circle_stroke_width="15dp"
+            app:cs_circle_style="round"
+            app:cs_disable_progress_glow="true"
+            app:cs_max="170"
+            app:cs_pointer_color="@color/brainColor"
+            app:cs_pointer_halo_width="0dp"
+            app:cs_pointer_stroke_width="25dp"
+            app:cs_progress="40" />
+
+        <!-- CurrencyMark Container with Growing Effect using custom mask logic -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/currencyMarkContainer"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center">
+
+            <com.cascade26.scrollbreak.Views.RevealMaskImageView
+                android:id="@+id/currencyMarkColor"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:elevation="2dp"
+                android:src="@drawable/attention_currency"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/currencyMarkBase"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/attention_currency"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/timerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="sans-serif-light"
+        android:textColor="?attr/tintGlobalColor"
+        android:textSize="50sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressContainer" />
+
+    <TextView
+        android:id="@+id/pomodoroIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Pomodoro Active"
+        android:textColor="?attr/tintGlobalColor"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-medium"
+        android:background="@drawable/pill_bg"
+        android:backgroundTint="?attr/glass_surface"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timerText" />
+
+    <!-- Break Duration seekbar (shown inline when Pomodoro is enabled) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/breakSeekbarCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginTop="10dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/glass_surface"
+        app:cardCornerRadius="@dimen/component_corner_radius"
+        app:strokeColor="?attr/glass_stroke"
+        app:strokeWidth="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pomodoroIndicator">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/hourglass"
+                    android:alpha="0.7"
+                    app:tint="?attr/tintGlobalColor" />
+
+                <TextView
+                    android:id="@+id/breakSeekbarLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Break: 5 min"
+                    android:textColor="?attr/tintGlobalColor"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/breakDurationSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:max="27"
+                android:progress="2"
+                android:progressTint="?attr/tintGlobalColor"
+                android:thumbTint="?attr/tintGlobalColor" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/instructionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:alpha="0.6"
+        android:fontFamily="sans-serif"
+        android:text="@string/drag"
+        android:textColor="?attr/tintGlobalColor"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/breakSeekbarCard" />
+
+    <LinearLayout
+        android:id="@+id/permissionsContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/instructionText"
+        app:layout_constraintBottom_toTopOf="@+id/topicsContainer">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/permissionCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_surface_glass"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="10dp"> <!-- Ripple Effect -->
+
+        <ImageView
+            android:id="@+id/frameAlertIcon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center"
+            android:background="@drawable/glass_circle"
+            android:padding="8dp"
+            android:src="@drawable/alarm"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/status_warning_icon" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvAlertTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:text="Permission Required"
+            android:textColor="?attr/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/ivArrow1"
+            app:layout_constraintStart_toEndOf="@id/frameAlertIcon"
+            app:layout_constraintTop_toTopOf="@id/frameAlertIcon" />
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/accurate"
+            android:textColor="?attr/text_tertiary"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="@id/tvAlertTitle"
+            app:layout_constraintStart_toStartOf="@id/tvAlertTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvAlertTitle" />
+
+        <!-- Arrow Icon -->
+        <ImageView
+            android:id="@+id/ivArrow1"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_right_arrow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/text_tertiary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Notification permission card -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/notificationPermCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_surface_glass"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/notifPermIcon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/glass_circle"
+            android:padding="8dp"
+            android:src="@drawable/bell"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/status_info_icon" />
+
+        <TextView
+            android:id="@+id/tvNotifPermTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:text="Notification Required"
+            android:textColor="?attr/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/ivNotifArrow"
+            app:layout_constraintStart_toEndOf="@id/notifPermIcon"
+            app:layout_constraintTop_toTopOf="@id/notifPermIcon" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:lineSpacingExtra="2dp"
+            android:text="Notification permission is required to show focus mode alerts"
+            android:textColor="?attr/text_tertiary"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="@id/tvNotifPermTitle"
+            app:layout_constraintStart_toStartOf="@id/tvNotifPermTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvNotifPermTitle" />
+
+        <ImageView
+            android:id="@+id/ivNotifArrow"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_right_arrow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/text_tertiary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/topicsContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/buttonCard">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Topic"
+            android:textSize="12sp"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:alpha="0.6"
+            android:layout_marginStart="30dp"
+            android:textColor="?attr/tintGlobalColor"
+            android:fontFamily="sans-serif-medium" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:clipToPadding="false"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:layout_marginTop="10dp">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/topicsChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="false"
+                app:chipSpacingHorizontal="10dp"
+                android:animateLayoutChanges="true">
+                
+                <!-- Chips will be added dynamically -->
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/buttonCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="50dp"
+        app:cardBackgroundColor="?attr/glass_surface"
+        app:cardCornerRadius="@dimen/component_corner_radius"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/focusStop"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:visibility="gone"
+                android:backgroundTint="@color/transparent"
+                android:fontFamily="sans-serif-medium"
+                android:text="Stop"
+                android:gravity="center"
+                android:textAllCaps="false"
+                android:textColor="?attr/tintGlobalColor"
+                android:textSize="20sp"
+                app:cornerRadius="@dimen/control_corner_radius" />
+
+            <View
+                android:id="@+id/btnDivider"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/glass_stroke"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/focusStart"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="2"
+                android:backgroundTint="@color/transparent"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/start"
+                android:gravity="center"
+                android:textAllCaps="false"
+                android:textColor="?attr/tintGlobalColor"
+                android:textSize="20sp"
+                app:cornerRadius="@dimen/control_corner_radius" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Task Card Overlay for Task-Linked Focus Mode -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/taskCardOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/glass_surface"
+        app:cardCornerRadius="@dimen/component_corner_radius"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonCard"
+        app:strokeColor="?attr/glass_stroke"
+        app:strokeWidth="1dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <ImageView
+                android:id="@+id/linkedTaskIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/glass_circle"
+                android:padding="8dp"
+                android:src="@drawable/list_todo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="?attr/tintGlobalColor" />
+
+            <TextView
+                android:id="@+id/linkedTaskName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Task Name"
+                android:textColor="?attr/tintGlobalColor"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="@+id/linkedTaskIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/linkedTaskIcon"
+                app:layout_constraintTop_toTopOf="@+id/linkedTaskIcon" />
+
+            <Button
+                android:id="@+id/markTaskCompleteBtn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="?attr/text_primary"
+                android:fontFamily="sans-serif-medium"
+                android:text="Mark Complete ✓"
+                android:textColor="?attr/surface_card"
+                android:textSize="16sp"
+                app:cornerRadius="@dimen/control_corner_radius"
+                app:layout_constraintTop_toBottomOf="@+id/linkedTaskIcon" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,223 @@
+<resources>
+    <string name="app_name">Scroll Break</string>
+    <string name="stats">Stats</string>
+    <string name="analytics_title">Intervention outcomes</string>
+    <string name="analytics_subtitle">Your on-device progress from rapid-scroll pauses.</string>
+    <string name="analytics_open">View intervention outcomes</string>
+    <string name="analytics_time_saved">Estimated attention reclaimed</string>
+    <string name="analytics_success_rate">Intervention success rate</string>
+    <string name="analytics_goal_adherence">Declared-goal adherence</string>
+    <string name="analytics_time_saved_value">%1$d min</string>
+    <string name="analytics_percent_value">%1$d%%</string>
+    <string name="analytics_sessions_value">%1$d intervention sessions</string>
+    <string name="scroll_pause_label">A MOMENT FOR YOUR ATTENTION</string>
+    <string name="scroll_pause_title">Is this where you meant to spend your time?</string>
+    <string name="scroll_intent_hint">What did you come here to do?</string>
+    <string name="scroll_intent_optional">Optional. This stays on your device.</string>
+    <string name="scroll_exit_app">I’m done here</string>
+    <string name="scroll_continue">Continue for now</string>
+    <string name="open_shop">Open Attention Currency shop and quests</string>
+    <string name="packageName">com.cascade26.scrollbreak</string>
+    <string name="accessibility_service_description">
+    Scroll Break requires Accessibility permission to provide its core features.
+    With this access, the app can detect which application is on screen, count scroll events, and block distracting apps during Focus Mode. When Smart Scroll Intervention is enabled, it also uses basic view structure to wait for a stopping point. App labels, session duration, intervention outcomes, and an optional intent you enter are saved only on this device. Scroll Break does not read or save screen text, screenshots, or content you type in other apps, and does not upload or share this data.
+</string>
+    <string name="total_usage">Total Usage</string>
+    <string name="time_wasted">Time Wasted</string>
+    <string name="time_focused">Time Focused</string>
+    <string name="demo_time">24h 24m</string>
+    <string name="grant_permission">Grant Accessibility Permission</string>
+    <string name="next">Continue</string>
+    <string name="turn_off_battery_optimisation">Turn off battery optimisation</string>
+    <string name="heading1">Take Control of Your Time!</string>
+    <string name="heading2">Focus on What Matters!</string>
+    <string name="heading3">Your privacy is most important</string>
+    <string name="desc1">Endless scrolling on reels and shorts can drain your time and focus. Our app helps you break free from the cycle.</string>
+    <string name="desc2">Set limits, get reminders, and take back your day. We\'ll help you spend your time more wisely.</string>
+    <string name="desc3">Usage and intervention metrics stay on your device. Any session intent you choose to enter is stored locally. We never record screen text or screenshots from other apps, and we do not upload your data.</string>
+    <string name="accessibility_more_info">
+    Scroll Break uses the Accessibility permission to support Focus Mode, app usage tracking, and optional Smart Scroll Intervention.\n\n
+    1. Detecting App Screen – to know which app is currently in use so we can block selected apps when you try to open them.\n
+    2. Counting Scrolls – to measure scroll activity and, when enabled, recognize rapid scrolling and a likely stopping point.\n
+    3. Local outcomes – when Smart Scroll Intervention is enabled, the app label, session duration, intervention result, and optional intent you enter are stored on this device.\n
+    4. Blocking Apps – when Focus Mode is active, the service automatically returns you to the home screen if you try to open a blocked app.\n\n
+    🔒 Privacy Assurance:\n
+    • We do not read or store screen text, screenshots, or content typed in other apps.\n
+    • Optional session intents you enter are stored locally and are never uploaded or shared.\n
+    • Usage and intervention data stays on your device.\n
+    • The permission is used only on your device, to help you stay focused.
+</string>
+    <string name="ass_permission">Accessibility Permission Required</string>
+    <string name="batter_permission">Disable Battery Optimisation</string>
+    <string name="why_battery">Disable battery optimisation to keep Scroll Break running in the background.</string>
+    <string name="why_accessibility">Scroll Break needs Accessibility permission to work. We use it only to detect which app screen is open, count your scrolls, and block selected apps. We do not collect or share your personal data.</string>
+    <string name="click_on_proceed">1. Click on Proceed</string>
+    <string name="select_installed_apps">2. Select Installed Apps</string>
+    <string name="enableApp">3. Select Scroll Break</string>
+    <string name="data_note">Scroll Break keeps your scrolling data on your device and does not collect your personal information.</string>
+    <string name="proceed">Proceed</string>
+    <string name="not_now">Not now</string>
+    <string name="step2allow">2. Click on Allow</string>
+    <string name="hello">Hello</string>
+    <string name="demo_coin">52</string>
+    <string name="focus_mode">Focus\nMode</string>
+    <string name="home_focus_shortcut">Open Focus Mode</string>
+    <string name="home_blocker_shortcut">Open App and Site Blocker</string>
+    <string name="manage_tasks">Manage Tasks</string>
+    <string name="no_upcoming_tasks">No upcoming tasks. Add a task to begin.</string>
+    <string name="attention_shop_title">Attention Exchange</string>
+    <string name="work_mode">Work Mode</string>
+    <string name="youtube_shorts">YouTube Shorts</string>
+    <string name="instagram_reels">Instagram Reels</string>
+    <string name="snapchat_highlights">Snapchat Highlights</string>
+    <string name="block">Block</string>
+    <string name="instagram">Instagram</string>
+    <string name="snapchat">Snapchat</string>
+    <string name="youtube">YouTube</string>
+    <string name="placeHolder">--</string>
+    <string name="total_time_you_were_productive">Total time you were productive</string>
+    <string name="workCard">This Card displays total time you have been productive using our Work Mode. Looking at Stats you are doing great, Keep it Up.</string>
+    <string name="breathe_to_relax">Breathe to relax</string>
+    <string name="breathe_to_sleep">Breathe to sleep</string>
+    <string name="fpbe">FPBE</string>
+    <string name="start">Start</string>
+    <string name="start_breathing">Start Breathing</string>
+    <string name="timer">Timer</string>
+    <string name="mins">mins</string>
+    <string name="reset">Reset</string>
+    <string name="remind_me_after">Remind me after</string>
+    <string name="hour">hour</string>
+    <string name="notiHead">Notification Permission</string>
+    <string name="notiDesc">Notification Permission is required to show timer in notifications</string>
+    <string name="notiStep2">2. Click on allow</string>
+    <string name="stop">Stop</string>
+    <string name="demo_0_time">00:00:00</string>
+    <string name="demo0">00</string>
+    <string name="hours">Hours</string>
+    <string name="minutes">Minutes</string>
+    <string name="seconds">Seconds</string>
+    <string name="set_time_limit">Limit time for focus mode.</string>
+    <string name="use_mods">Use Mods</string>
+    <string name="youtube_mods">YouTube Mods</string>
+    <string name="instagram_mods">Instagram Mods</string>
+    <string name="snapchat_mods">Snapchat Mods</string>
+    <string name="permission_error_click_to_resolve">Permission Error: Click to resolve</string>
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="back">Back</string>
+    <string name="total_time_focused">Total time focused</string>
+    <string name="_50_min">50 min</string>
+    <string name="decor">decor</string>
+
+    <string name="cond1">Brain still fresh. Keep it up! 🧠</string>
+    <string name="cond2">Fatigue setting in. 😐</string>
+    <string name="cond3">Cracks forming on brain. ⚠️</string>
+    <string name="cond4">Early decay detected on brain. 🧪</string>
+    <string name="cond5">Mold is growing on brain. 🤢</string>
+    <string name="cond6">Severe rot setting in. 😵‍</string>
+    <string name="cond7">Brain is bubbling. 💥</string>
+    <string name="cond8">You are now 90% zombie. 🧟</string>
+    <string name="cond9">Brain liquefied. ☠️</string>
+    <string name="select_apps_to_block_during_focus_mode">Select apps to block during focus mode</string>
+    <string name="app_is_blocked">App is Blocked</string>
+    <string name="you_are_in_focus_mode_this_app_is_currently_restricted">You are in Focus Mode. This app is currently restricted.</string>
+    <string name="brain">Brain</string>
+    <string name="set_limit">Set Limit</string>
+    <string name="custom_app_blocking">Custom App Blocking</string>
+    <string name="blocking_popup_duration">Popup Duration</string>
+    <string name="min_5_seconds_in_seconds">Blocking popup duration</string>
+    <string name="sec">sec</string>
+    <string name="select_apps_to_block">Select apps to block</string>
+
+    <string name="minutes_unit">min</string>
+
+    <string name="summary_remind_doom_scrolling_minutes">Set minutes before initial reminder (e.g., 10).</string>
+
+    <string name="title_block_after_time">Block Content After Time</string>
+
+    <string name="overlayPermission">Overlay Permission</string>
+    <string name="overlayPermissionDesc">Overlay permission is required for app blocking.</string>
+    <string name="overlayPermissionStep2">2. Turn on the switch next to Scroll Break</string>
+    <string name="demo_hello">User</string>
+    <string name="hello_hand"> \uD83D\uDC4B</string>
+    <string name="pieRadius">Pie Radius</string>
+    <string name="pieGlow">Pie Glow</string>
+    <string name="daily_stats">Daily Stats</string>
+    <string name="more_apps_coming_soon">More apps coming soon!</string>
+    <string name="pause">Pause the blocking</string>
+    <string name="stay_focused">Stay focused, get back to your work</string>
+    <string name="set_your_focus_time">Set your focus time</string>
+    <string name="drag">Drag the circle to set time (10–180 min)</string>
+    <string name="congratulations">Congratulations!</string>
+    <string name="no_tasks_match_your_search">No tasks match your search</string>
+    <string name="no_tasks_found">No tasks found</string>
+    <string name="access_home">Accessibility permission required for scroll count, blocking and other stats.</string>
+    <string name="lets_go">Let\'s go</string>
+    <string name="batter_notice">If app stops working in the background, try turning off battery optimization</string>
+    <string name="set_reminder_time">Set Reminder Time</string>
+    <string name="set_block_time">Set Block Time</string>
+    <string name="accurate">To make sure that you\'re notified at the right time, grant Tasks permission.</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="repeats">Repeats</string>
+    <string name="set_time">Set time</string>
+    <string name="repeat">Repeat</string>
+    <string name="done">Done</string>
+    <string name="save">Save</string>
+    <string name="first_name">First name</string>
+    <string name="what_s_your_first_name">What\'s your first name?</string>
+    <string name="dark">Dark</string>
+    <string name="light">Light</string>
+    <string name="welcome_back">welcome back</string>
+    <string name="quit">Quit</string>
+    <string name="tasks">Tasks</string>
+    <string name="home">Home</string>
+    <string name="habits">Habits</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_habits">Add habits</string>
+    <string name="completed">Completed</string>
+    <string name="task_icon">Task icon</string>
+
+    <!-- Widget Strings -->
+    <string name="focus_timer">Focus Timer</string>
+    <string name="pomodoro">Pomodoro</string>
+    <string name="tap_to_start">Tap to Start</string>
+    <string name="running">Running</string>
+    <string name="paused">Paused</string>
+    <string name="break_time">Break Time</string>
+    <string name="widget_focus_desc">Set Timer</string>
+    <string name="widget_pomodoro_desc">Pomodoro Focus</string>
+
+    <!-- Refined Widget Strings -->
+    <string name="widget_tasks_label">Tasks List</string>
+    <string name="widget_tasks_desc">View and manage your daily tasks directly from your home screen.</string>
+
+    <string name="widget_habits_label">Habit Tracker</string>
+    <string name="widget_habits_desc">Keep track of your daily habits and maintain your streaks.</string>
+
+    <string name="widget_focus_label">Focus Timer</string>
+    <string name="widget_focus_desc_new">Start a custom focus session to enhance your productivity.</string>
+
+    <string name="widget_pomodoro_label">Pomodoro Timer</string>
+    <string name="widget_pomodoro_desc_new">Use the Pomodoro technique to balance work and breaks effectively.</string>
+
+    <string name="widget_screen_time_label">Screen Time Stats</string>
+    <string name="widget_screen_time_desc">Monitor your daily screen time and track scrolling habits.</string>
+    
+    <string name="onboarding_heading1">Break the infinite doomscroll</string>
+    <string name="onboarding_desc1">Pause the endless feed, interrupt the habit, and put your attention back where you want it.</string>
+    <string name="onboarding_heading2">Build Atomic Rituals</string>
+    <string name="onboarding_desc2">Small habits, big changes. Stack your wins one by one.</string>
+    <string name="onboarding_heading3">Put the brakes on distractions</string>
+    <string name="onboarding_desc3">Set boundaries for the apps that pull you into endless scrolling and reclaim your time.</string>
+    <string name="onboarding_heading4">Visualize Progress</string>
+    <string name="onboarding_desc4">Watch yourself grow. Track streaks, mood and focus trends.</string>
+    <string name="onboarding_heading5">Private \u0026 Offline</string>
+    <string name="onboarding_desc5">Your data stays on your device. No cloud uploads, no tracking 100% secure.</string>
+    <string name="skip">Skip</string>
+
+    <!-- Device Admin -->
+    <string name="device_admin_description">Scroll Break uses Android Device Admin. Android asks you to revoke this permission before uninstalling the app; it does not prevent force-stop or guarantee that protection stays active.</string>
+    <string name="team_credits">• Ojas S.K Mohbansi\n• Parth Mankawade\n• Bhavya Gautam\n• Mohammed Parvez</string>
+
+</resources>

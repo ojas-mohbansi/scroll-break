@@ -1,0 +1,5 @@
+<!-- res/drawable/rounded_bg.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="?attr/embeddedCards" />
+    <corners android:radius="@dimen/component_corner_radius" /> <!-- Adjust radius as needed -->
+</shape>
