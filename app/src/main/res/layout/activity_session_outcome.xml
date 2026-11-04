@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/app_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="28dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/session_outcome_title"
+        android:textColor="?attr/text_primary"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/sessionOutcomePurpose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:textColor="?attr/text_tertiary"
+        android:textSize="16sp" />
+
+    <RadioGroup
+        android:id="@+id/sessionOutcomeGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+        <RadioButton
+            android:id="@+id/sessionOutcomeYes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/session_purpose_yes"
+            android:textColor="?attr/text_primary" />
+        <RadioButton
+            android:id="@+id/sessionOutcomeNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/session_purpose_no"
+            android:textColor="?attr/text_primary" />
+    </RadioGroup>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sessionOutcomeSave"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/session_outcome_save"
+        app:backgroundTint="?attr/brand_accent"
+        app:cornerRadius="@dimen/component_corner_radius" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sessionOutcomeSkip"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/session_outcome_skip"
+        app:cornerRadius="@dimen/component_corner_radius" />
+</LinearLayout>

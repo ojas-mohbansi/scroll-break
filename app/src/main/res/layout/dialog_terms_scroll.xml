@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="?attr/colorSurface">
+
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/accessibility_service_description"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/tintGlobalColor"
+        android:layout_marginBottom="16dp"/>
+
+    <ScrollView
+        android:id="@+id/termsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/accessibility_more_info"
+                android:textSize="14sp"
+                android:textColor="?attr/tintGlobalColor"
+                android:alpha="0.85"
+                android:lineSpacingExtra="6dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/scrollHintText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="↓ Please scroll to the bottom to read and accept"
+        android:textSize="12sp"
+        android:textColor="@color/brand_accent"
+        android:gravity="center"
+        android:layout_marginBottom="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAcceptTerms"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="@string/done"
+        android:enabled="false"
+        android:alpha="0.5"
+        style="@style/Widget.Material3.Button"/>
+
+</LinearLayout>

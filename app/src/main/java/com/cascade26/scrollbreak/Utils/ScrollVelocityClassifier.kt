@@ -19,7 +19,7 @@ class ScrollVelocityClassifier(
         return timestamps.size >= threshold
     }
 
-    /** Returns true once the same structural content item has remained stable for 20 seconds. */
+    /** Returns true once the same structural content has remained stable for 20 seconds. */
     @Synchronized
     fun observeContent(signature: String?, nowMs: Long): Boolean {
         if (signature.isNullOrEmpty()) {
@@ -40,6 +40,13 @@ class ScrollVelocityClassifier(
         }
         return false
     }
+
+    @Synchronized
+    fun hasStableContent(signature: String?, nowMs: Long): Boolean =
+        !signature.isNullOrEmpty()
+            && signature == lastContentSignature
+            && sameContentSince > 0L
+            && nowMs - sameContentSince >= STABLE_CONTENT_MS
 
     @Synchronized
     fun reset() {

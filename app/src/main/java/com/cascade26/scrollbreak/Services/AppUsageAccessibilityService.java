@@ -10,6 +10,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -41,6 +43,8 @@ import androidx.preference.PreferenceManager;
 
 import com.cascade26.scrollbreak.Activities.BlockingOverlayDisplayActivity;
 import com.cascade26.scrollbreak.Activities.ScrollInterventionActivity;
+import com.cascade26.scrollbreak.Activities.SessionIntentionActivity;
+import com.cascade26.scrollbreak.Activities.SessionOutcomeActivity;
 import com.cascade26.scrollbreak.Common.IntentActions;
 import com.cascade26.scrollbreak.R;
 import com.cascade26.scrollbreak.db.ScrollBreakRoomDatabase;
@@ -128,6 +132,8 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     // Broadcast Action for internal state refresh at midnight
     public static final String ACTION_REFRESH_DAILY_STATE_INTERNAL = "com.cascade26.scrollbreak.action.REFRESH_DAILY_STATE_INTERNAL";
     public static final String ACTION_UPDATE_KEEP_ALIVE = "com.cascade26.scrollbreak.action.UPDATE_KEEP_ALIVE";
+    public static final String ACTION_SESSION_INTENTION_RESOLVED = "com.cascade26.scrollbreak.action.SESSION_INTENTION_RESOLVED";
+    public static final String ACTION_SESSION_INTENTION_CANCELLED = "com.cascade26.scrollbreak.action.SESSION_INTENTION_CANCELLED";
 
     // Admin Guard — App Info page blocker
     public static final String PREF_ADMIN_GUARD_TRUSTED_TOKEN = "pref_admin_guard_trusted_token_ms";
@@ -161,6 +167,20 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     private final Map<String, String> lastVideoControlStates = new HashMap<>();
     private final Handler scrollClassifierHandler = new Handler(Looper.getMainLooper());
     private String telemetryActivePackage;
+    private String sessionIntentPromptPackage;
+    private Runnable sessionIntentionLaunchRunnable;
+    private Runnable sessionIntentionReturnRunnable;
+    private String sessionIntentionDeclinedPackage;
+    private String lastTelemetryWindowPackage;
+    private String telemetryPurpose;
+    private long telemetrySessionStartedAtMs;
+    private long telemetrySessionGoalMs;
+    private long telemetrySessionOverrunMs;
+    private long telemetrySessionAwayAtMs;
+    private long telemetrySessionAwayAccumulatedMs;
+    private int telemetryExitAttempts;
+    private Runnable telemetrySessionCloseRunnable;
+    private final Runnable telemetryOverrunRunnable = this::handleSessionOverrun;
     private String classifierInterventionHandledPackage;
     private String pendingClassifierPackage;
     private long classifierPendingSinceMs;
@@ -168,6 +188,7 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     private String pendingContentSignature;
     private boolean pendingLikelyLongFormContent;
     private boolean classifierPromptVisible;
+    private String pendingInterventionReason = ScrollInterventionActivity.REASON_RAPID_SCROLL;
     private final Runnable scrollClassifierCheck = this::checkScrollClassifierWait;
 
     // --- Variables for Back Pressing ---
@@ -345,7 +366,6 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     public static final String RESTORE_NOTIFICATION = "restore_notification";
     private BroadcastReceiver notificationRestoreReceiver;
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -498,6 +518,56 @@ public class AppUsageAccessibilityService extends AccessibilityService {
                         packageBypassExpiryTimeMap.put(pkg, System.currentTimeMillis() + (long) durationMinutes * 60 * 1000);
                         Log.d(TAG, "Bypass granted for package: " + pkg + " for " + durationMinutes + " mins");
                     }
+                } else if (intent != null && ACTION_SESSION_INTENTION_RESOLVED.equals(intent.getAction())) {
+                    String pkg = intent.getStringExtra(SessionIntentionActivity.EXTRA_PACKAGE);
+                    if (pkg != null) {
+                        Log.i(TAG, "Received intention confirmation for " + pkg);
+                        telemetryActivePackage = pkg;
+                        telemetryPurpose = PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                .getString("session_purpose_" + pkg, null);
+                        if (sessionTelemetryManager != null) {
+                            sessionTelemetryManager.recordSessionMode(pkg,
+                                    PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                            .getString("session_mode_" + pkg, SessionTelemetryManager.MODE_STANDARD));
+                            sessionTelemetryManager.recordEvaluationGroup(pkg,
+                                    PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                            .getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP, null));
+                        }
+                        telemetrySessionStartedAtMs = intent.getLongExtra(
+                                SessionIntentionActivity.EXTRA_STARTED_AT, System.currentTimeMillis());
+                        telemetrySessionGoalMs = intent.getLongExtra(
+                                SessionIntentionActivity.EXTRA_GOAL_MINUTES,
+                                SessionTelemetryManager.DEFAULT_SESSION_GOAL_MINUTES) * 60_000L;
+                        telemetrySessionOverrunMs = 0L;
+                        telemetrySessionAwayAccumulatedMs = 0L;
+                        telemetryExitAttempts = 0;
+                        telemetrySessionAwayAtMs = 0L;
+                        scheduleSessionOverrun(pkg);
+                        persistConfirmedSession(pkg);
+                        if (sessionIntentionReturnRunnable != null) {
+                            scrollClassifierHandler.removeCallbacks(sessionIntentionReturnRunnable);
+                        }
+                        sessionIntentionReturnRunnable = () -> {
+                            sessionIntentionReturnRunnable = null;
+                            if (pkg.equals(sessionIntentPromptPackage)) sessionIntentPromptPackage = null;
+                        };
+                        scrollClassifierHandler.postDelayed(sessionIntentionReturnRunnable, 2_000L);
+                    }
+                } else if (intent != null && ACTION_SESSION_INTENTION_CANCELLED.equals(intent.getAction())) {
+                    String pkg = intent.getStringExtra(SessionIntentionActivity.EXTRA_PACKAGE);
+                    if (pkg != null && pkg.equals(sessionIntentPromptPackage)) {
+                        sessionIntentPromptPackage = null;
+                        boolean userDeclined = intent.getBooleanExtra(
+                                SessionIntentionActivity.EXTRA_USER_DECLINED, false);
+                        if (userDeclined) {
+                            sessionIntentionDeclinedPackage = pkg;
+                        } else if (pkg.equals(lastTelemetryWindowPackage)
+                                && canRunScrollClassifier(pkg)) {
+                            // Transient Activity stops must not silently let the
+                            // target session proceed without an intention check.
+                            scheduleSessionIntentionPrompt(pkg);
+                        }
+                    }
                 } else if (intent != null && ScrollInterventionActivity.ACTION_OUTCOME_RESOLVED.equals(intent.getAction())) {
                     String pkg = intent.getStringExtra(ScrollInterventionActivity.EXTRA_TARGET_PACKAGE);
                     if (pkg != null && pkg.equals(pendingClassifierPackage)) {
@@ -505,13 +575,65 @@ public class AppUsageAccessibilityService extends AccessibilityService {
                                 ScrollInterventionActivity.EXTRA_OUTCOME_SUCCESS, false);
                         clearPendingClassifier(pkg);
                         if (success) {
+                            SharedPreferences sessionPreferences = PreferenceManager.getDefaultSharedPreferences(
+                                    AppUsageAccessibilityService.this);
+                            boolean evaluationEnabled = sessionPreferences.getBoolean(
+                                    SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_ENABLED, false);
+                            String evaluationSessionId = sessionPreferences.getString(
+                                    SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_SESSION_ID, null);
+                            String sessionPurpose = telemetryPurpose;
+                            scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+                            if (telemetrySessionCloseRunnable != null) {
+                                scrollClassifierHandler.removeCallbacks(telemetrySessionCloseRunnable);
+                                telemetrySessionCloseRunnable = null;
+                            }
                             telemetryActivePackage = null;
                             classifierInterventionHandledPackage = null;
+                            telemetryPurpose = null;
+                            telemetrySessionStartedAtMs = 0L;
+                            telemetrySessionGoalMs = 0L;
+                            telemetrySessionOverrunMs = 0L;
+                            telemetrySessionAwayAccumulatedMs = 0L;
+                            telemetryExitAttempts = 0;
+                            PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this).edit()
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_PACKAGE)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_STARTED_AT)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_GOAL_MINUTES)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_OVERRUN_MS)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EXIT_ATTEMPTS)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_MODE)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_SESSION_ID)
+                                    .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_ENABLED)
+                                    .apply();
+                            clearConfirmedSessionMarker(pkg);
+                            if (evaluationEnabled && evaluationSessionId != null) {
+                                showEvaluationOutcome(pkg, sessionPurpose, evaluationSessionId);
+                            }
                         } else {
                             // A bypass resolves this app foreground session; do not prompt again until
                             // the user leaves the monitored app and starts a new session.
                             telemetryActivePackage = pkg;
                             classifierInterventionHandledPackage = pkg;
+                            telemetrySessionStartedAtMs = System.currentTimeMillis();
+                            telemetrySessionOverrunMs = 0L;
+                            telemetrySessionAwayAtMs = 0L;
+                            telemetrySessionAwayAccumulatedMs = 0L;
+                            persistConfirmedSession(pkg);
+                            if (sessionTelemetryManager != null) {
+                                sessionTelemetryManager.startSession(pkg, getAppNameFromPackageManager(pkg),
+                                        telemetryPurpose, (int) Math.max(5L, telemetrySessionGoalMs / 60_000L),
+                                        PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                                .getString("session_mode_" + pkg, SessionTelemetryManager.MODE_STANDARD),
+                                        PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                                .getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP, null),
+                                        PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this)
+                                                .getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_SESSION_ID, null),
+                                        telemetrySessionStartedAtMs);
+                                sessionTelemetryManager.markIntervention(pkg);
+                                sessionTelemetryManager.markInterventionShown(pkg);
+                            }
+                            scheduleSessionOverrun(pkg);
                             scrollClassifierHandler.postDelayed(() -> {
                                 Intent resumeTarget = getPackageManager().getLaunchIntentForPackage(pkg);
                                 if (resumeTarget == null) return;
@@ -531,6 +653,8 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         IntentFilter overlayIntentFilter = new IntentFilter(ACTION_PERFORM_GLOBAL_HOME_FROM_OVERLAY);
         overlayIntentFilter.addAction(ACTION_PERFORM_GLOBAL_BACK_FROM_OVERLAY);
         overlayIntentFilter.addAction("com.cascade26.scrollbreak.action.APP_BYPASS_GRANTED");
+        overlayIntentFilter.addAction(ACTION_SESSION_INTENTION_RESOLVED);
+        overlayIntentFilter.addAction(ACTION_SESSION_INTENTION_CANCELLED);
         overlayIntentFilter.addAction(ScrollInterventionActivity.ACTION_OUTCOME_RESOLVED);
         ContextCompat.registerReceiver(this, overlayCommandReceiver, overlayIntentFilter,
                 ContextCompat.RECEIVER_NOT_EXPORTED);
@@ -710,7 +834,7 @@ public class AppUsageAccessibilityService extends AccessibilityService {
                 Log.d(TAG, "onReceive: screenReceiver");
             }
         };
-        registerReceiver(screenReceiver, filter);
+        ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_EXPORTED);
         isScreenReceiverRegistered = true;
     }
 
@@ -1101,39 +1225,338 @@ public class AppUsageAccessibilityService extends AccessibilityService {
             if (pendingClassifierPackage != null) clearPendingClassifier(pendingClassifierPackage);
             classifierInterventionHandledPackage = null;
             if (telemetryActivePackage != null) {
+                clearConfirmedSessionMarker(telemetryActivePackage);
                 sessionTelemetryManager.finishWithoutIntervention(telemetryActivePackage);
+                clearConfirmedSessionMarker(telemetryActivePackage);
                 resetScrollClassifier(telemetryActivePackage);
                 telemetryActivePackage = null;
+            }
+            sessionIntentPromptPackage = null;
+            scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+            if (telemetrySessionCloseRunnable != null) {
+                scrollClassifierHandler.removeCallbacks(telemetrySessionCloseRunnable);
+                telemetrySessionCloseRunnable = null;
             }
             return;
         }
 
-        if (telemetryActivePackage != null && !telemetryActivePackage.equals(packageName)) {
-            boolean isClassifierPrompt = telemetryActivePackage.equals(pendingClassifierPackage)
-                    && classifierPromptVisible && packageName.equals(getPackageName());
-            boolean promptLeavingToAnotherApp = telemetryActivePackage.equals(pendingClassifierPackage)
-                    && classifierPromptVisible;
-            boolean isPendingPromptLaunch = telemetryActivePackage.equals(pendingClassifierPackage)
-                    && !classifierPromptVisible && packageName.equals(getPackageName());
-            if (isClassifierPrompt || promptLeavingToAnotherApp || isPendingPromptLaunch) {
-                return;
+        if (packageName == null) return;
+        // IME windows sit above the focused app while text is being entered;
+        // they are not app exits and must not pause the session timer.
+        if (isCurrentInputMethodPackage(packageName)) return;
+        restoreConfirmedSessionForPackage(packageName);
+        // The pending prompt activity can be stopped by a task switch or OEM
+        // lifecycle transition before its cancellation broadcast reaches this
+        // service. Never let that stale marker suppress future app sessions.
+        if (sessionIntentPromptPackage != null
+                && !sessionIntentPromptPackage.equals(packageName)
+                && !getPackageName().equals(packageName)
+                && !isTransientSystemWindowPackage(packageName)) {
+            if (sessionIntentionLaunchRunnable != null) {
+                scrollClassifierHandler.removeCallbacks(sessionIntentionLaunchRunnable);
+                sessionIntentionLaunchRunnable = null;
             }
-            if (telemetryActivePackage.equals(classifierInterventionHandledPackage)) {
-                classifierInterventionHandledPackage = null;
+            sessionIntentPromptPackage = null;
+        }
+        // Our check-in and intervention screens sit above the target app. They are
+        // part of its session, not an exit from it.
+        if (getPackageName().equals(packageName)
+                && (sessionIntentPromptPackage != null || pendingClassifierPackage != null)) return;
+
+        // Keep treating our own check-in Activity as part of the target session.
+        // Clear its marker only once the confirmed target app is foreground again.
+        if (packageName.equals(telemetryActivePackage)
+                && packageName.equals(sessionIntentPromptPackage)) {
+            sessionIntentPromptPackage = null;
+            if (sessionIntentionReturnRunnable != null) {
+                scrollClassifierHandler.removeCallbacks(sessionIntentionReturnRunnable);
+                sessionIntentionReturnRunnable = null;
             }
-            if (telemetryActivePackage.equals(pendingClassifierPackage)) {
-                clearPendingClassifier(telemetryActivePackage);
-            }
-            sessionTelemetryManager.finishWithoutIntervention(telemetryActivePackage);
-            resetScrollClassifier(telemetryActivePackage);
-            telemetryActivePackage = null;
         }
 
-        if (Utils.ALL_PACKAGES.containsKey(packageName) && !packageName.equals(telemetryActivePackage)) {
-            sessionTelemetryManager.startSession(packageName, getAppNameFromPackageManager(packageName));
-            telemetryActivePackage = packageName;
+        boolean tracked = Utils.ALL_PACKAGES.containsKey(packageName);
+        boolean classifierEligible = tracked && canRunScrollClassifier(packageName);
+        if (!tracked && sessionIntentionDeclinedPackage != null) sessionIntentionDeclinedPackage = null;
+        if (tracked && !packageName.equals(sessionIntentionDeclinedPackage)) sessionIntentionDeclinedPackage = null;
+        if (telemetryActivePackage != null && telemetryActivePackage.equals(packageName)) {
+            if (telemetrySessionAwayAtMs != 0L) {
+                long awayFor = Math.max(0L, System.currentTimeMillis() - telemetrySessionAwayAtMs);
+                if (awayFor > SESSION_BACKGROUND_GRACE_MS) {
+                    closeTelemetrySession(packageName);
+                    lastTelemetryWindowPackage = packageName;
+                    if (canRunScrollClassifier(packageName)) scheduleSessionIntentionPrompt(packageName);
+                    return;
+                }
+                telemetrySessionAwayAtMs = 0L;
+                telemetrySessionAwayAccumulatedMs += awayFor;
+                if (telemetrySessionCloseRunnable != null) {
+                    scrollClassifierHandler.removeCallbacks(telemetrySessionCloseRunnable);
+                    telemetrySessionCloseRunnable = null;
+                }
+                // A quick trip to Home or another app is an exit attempt even
+                // though the session stays open during the background grace period.
+                if (awayFor <= SESSION_EXIT_RETURN_WINDOW_MS) {
+                    sessionTelemetryManager.recordExitAttempt(packageName, count -> {
+                        telemetryExitAttempts = Math.max(telemetryExitAttempts, count);
+                        PreferenceManager.getDefaultSharedPreferences(AppUsageAccessibilityService.this).edit()
+                                .putInt(SessionTelemetryManager.PREF_ACTIVE_SESSION_EXIT_ATTEMPTS, telemetryExitAttempts)
+                                .apply();
+                        if (count >= SESSION_EXIT_INTERVENTION_THRESHOLD
+                                && telemetryActivePackage != null
+                                && telemetryActivePackage.equals(packageName)) {
+                            triggerSessionIntervention(packageName, ScrollInterventionActivity.REASON_REPEATED_EXIT);
+                        }
+                        return kotlin.Unit.INSTANCE;
+                    });
+                }
+                if (telemetrySessionOverrunMs > 0L) {
+                    triggerSessionIntervention(packageName, ScrollInterventionActivity.REASON_SESSION_OVERRUN);
+                }
+                else scheduleSessionOverrun(packageName);
+            }
+            lastTelemetryWindowPackage = packageName;
+            return;
+        }
+
+        if (telemetryActivePackage != null) {
+            String previousPackage = telemetryActivePackage;
+            if (tracked) {
+                closeTelemetrySession(previousPackage);
+            } else if (telemetrySessionAwayAtMs == 0L) {
+                telemetrySessionAwayAtMs = System.currentTimeMillis();
+                scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+                scheduleTelemetrySessionClose(previousPackage);
+                if (telemetrySessionOverrunMs > 0L) {
+                    // Keep the overrun pending until the user returns to the target app.
+                    scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+                }
+            }
+        }
+
+        lastTelemetryWindowPackage = packageName;
+        if (tracked && telemetryActivePackage == null && sessionIntentPromptPackage == null
+                && !packageName.equals(sessionIntentionDeclinedPackage)
+                && !packageName.equals(classifierInterventionHandledPackage)
+                && classifierEligible) {
+            scheduleSessionIntentionPrompt(packageName);
         }
     }
+
+    private boolean isTransientSystemWindowPackage(String packageName) {
+        if (packageName == null || "com.android.systemui".equals(packageName)) return true;
+        return isCurrentInputMethodPackage(packageName);
+    }
+
+    private boolean isCurrentInputMethodPackage(String packageName) {
+        String inputMethod = Settings.Secure.getString(
+                getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+        ComponentName inputMethodComponent = ComponentName.unflattenFromString(inputMethod);
+        return inputMethodComponent != null && packageName.equals(inputMethodComponent.getPackageName());
+    }
+
+    private void restoreConfirmedSessionForPackage(String packageName) {
+        if (packageName == null || !Utils.ALL_PACKAGES.containsKey(packageName)
+                || (telemetryActivePackage != null && telemetryActivePackage.equals(packageName))) return;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!packageName.equals(preferences.getString(
+                SessionTelemetryManager.PREF_ACTIVE_SESSION_PACKAGE, null))) return;
+        long startedAt = preferences.getLong(SessionTelemetryManager.PREF_ACTIVE_SESSION_STARTED_AT, 0L);
+        int goalMinutes = preferences.getInt(
+                SessionTelemetryManager.PREF_ACTIVE_SESSION_GOAL_MINUTES,
+                SessionTelemetryManager.DEFAULT_SESSION_GOAL_MINUTES);
+        if (startedAt <= 0L) return;
+        telemetryActivePackage = packageName;
+        telemetryPurpose = preferences.getString("session_purpose_" + packageName, null);
+        if (sessionTelemetryManager != null) {
+            sessionTelemetryManager.recordSessionMode(packageName, preferences.getString("session_mode_" + packageName,
+                    preferences.getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_MODE,
+                            SessionTelemetryManager.MODE_STANDARD)));
+            sessionTelemetryManager.recordEvaluationGroup(packageName,
+                    preferences.getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP, null));
+        }
+        telemetrySessionStartedAtMs = startedAt;
+        telemetrySessionGoalMs = Math.max(5, Math.min(60, goalMinutes)) * 60_000L;
+        telemetrySessionOverrunMs = preferences.getLong(
+                SessionTelemetryManager.PREF_ACTIVE_SESSION_OVERRUN_MS, 0L);
+        telemetryExitAttempts = preferences.getInt(
+                SessionTelemetryManager.PREF_ACTIVE_SESSION_EXIT_ATTEMPTS, 0);
+        telemetrySessionAwayAtMs = 0L;
+        telemetrySessionAwayAccumulatedMs = 0L;
+        sessionIntentPromptPackage = null;
+        scheduleSessionOverrun(packageName);
+    }
+
+    private void persistConfirmedSession(String packageName) {
+        if (packageName == null || !packageName.equals(telemetryActivePackage)) return;
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(SessionTelemetryManager.PREF_ACTIVE_SESSION_PACKAGE, packageName)
+                .putLong(SessionTelemetryManager.PREF_ACTIVE_SESSION_STARTED_AT, telemetrySessionStartedAtMs)
+                .putInt(SessionTelemetryManager.PREF_ACTIVE_SESSION_GOAL_MINUTES,
+                        (int) Math.max(5L, telemetrySessionGoalMs / 60_000L))
+                .putLong(SessionTelemetryManager.PREF_ACTIVE_SESSION_OVERRUN_MS, telemetrySessionOverrunMs)
+                .putInt(SessionTelemetryManager.PREF_ACTIVE_SESSION_EXIT_ATTEMPTS, telemetryExitAttempts)
+                .apply();
+    }
+
+    private void clearConfirmedSessionMarker(String packageName) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (packageName != null && !packageName.equals(preferences.getString(
+                SessionTelemetryManager.PREF_ACTIVE_SESSION_PACKAGE, null))) return;
+        preferences.edit()
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_PACKAGE)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_STARTED_AT)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_GOAL_MINUTES)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_OVERRUN_MS)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EXIT_ATTEMPTS)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_MODE)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_SESSION_ID)
+                .remove(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_ENABLED)
+                .apply();
+    }
+
+    private void scheduleSessionIntentionPrompt(String packageName) {
+        if (packageName == null || packageName.equals(sessionIntentPromptPackage)) return;
+        sessionIntentPromptPackage = packageName;
+        if (sessionIntentionLaunchRunnable != null) {
+            scrollClassifierHandler.removeCallbacks(sessionIntentionLaunchRunnable);
+        }
+        sessionIntentionLaunchRunnable = () -> {
+            sessionIntentionLaunchRunnable = null;
+            if (!packageName.equals(sessionIntentPromptPackage)
+                    || !packageName.equals(lastTelemetryWindowPackage)
+                    || !canRunScrollClassifier(packageName)) {
+                if (packageName.equals(sessionIntentPromptPackage)) sessionIntentPromptPackage = null;
+                return;
+            }
+            Intent prompt = new Intent(this, SessionIntentionActivity.class)
+                    .putExtra(SessionIntentionActivity.EXTRA_PACKAGE, packageName)
+                    .putExtra(SessionIntentionActivity.EXTRA_APP_NAME, getAppNameFromPackageManager(packageName))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            try {
+                startActivity(prompt);
+            } catch (RuntimeException e) {
+                sessionIntentPromptPackage = null;
+                Log.e(TAG, "Unable to show pre-session intention prompt for " + packageName, e);
+            }
+        };
+        // Let the target app finish its initial Activity transition before we
+        // raise our purpose-and-duration check-in over it.
+        scrollClassifierHandler.postDelayed(sessionIntentionLaunchRunnable, 500L);
+    }
+
+    private void scheduleSessionOverrun(String packageName) {
+        scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+        if (packageName == null || !packageName.equals(telemetryActivePackage)
+                || telemetrySessionStartedAtMs <= 0L || telemetrySessionGoalMs <= 0L) return;
+        long elapsed = getActiveSessionDurationMs();
+        long remaining = Math.max(1L, telemetrySessionGoalMs - elapsed);
+        scrollClassifierHandler.postDelayed(telemetryOverrunRunnable, remaining);
+    }
+
+    private void handleSessionOverrun() {
+        String packageName = telemetryActivePackage;
+        if (packageName == null || telemetrySessionStartedAtMs <= 0L || telemetrySessionGoalMs <= 0L) return;
+        if (telemetrySessionAwayAtMs != 0L) return;
+        long elapsed = getActiveSessionDurationMs();
+        telemetrySessionOverrunMs = Math.max(1L, elapsed - telemetrySessionGoalMs);
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putLong(SessionTelemetryManager.PREF_ACTIVE_SESSION_OVERRUN_MS, telemetrySessionOverrunMs)
+                .apply();
+        sessionTelemetryManager.markOverrun(packageName, telemetrySessionOverrunMs);
+        if (packageName.equals(lastTelemetryWindowPackage)) {
+            triggerSessionIntervention(packageName, ScrollInterventionActivity.REASON_SESSION_OVERRUN);
+        }
+    }
+
+    private void triggerSessionIntervention(String packageName, String reason) {
+        if (packageName == null || classifierPromptVisible || !packageName.equals(telemetryActivePackage)) return;
+        pendingClassifierPackage = packageName;
+        pendingInterventionReason = reason;
+        classifierPendingSinceMs = android.os.SystemClock.elapsedRealtime();
+        classifierLastScrollMs = classifierPendingSinceMs;
+        AccessibilityNodeInfo root = null;
+        try {
+            root = getRootInActiveWindow();
+            pendingContentSignature = buildVisibleStructureSignature(root);
+            pendingLikelyLongFormContent = isLikelyLongFormContent(root);
+            lastVideoControlStates.put(packageName, buildVideoControlSignature(root));
+        } finally {
+            if (root != null) root.recycle();
+        }
+        classifierPromptVisible = false;
+        scrollClassifierHandler.removeCallbacks(scrollClassifierCheck);
+        scrollClassifierHandler.postDelayed(scrollClassifierCheck, 500L);
+    }
+
+    private void scheduleTelemetrySessionClose(String packageName) {
+        if (telemetrySessionCloseRunnable != null) scrollClassifierHandler.removeCallbacks(telemetrySessionCloseRunnable);
+        telemetrySessionCloseRunnable = () -> {
+            if (packageName.equals(telemetryActivePackage) && telemetrySessionAwayAtMs != 0L
+                    && System.currentTimeMillis() - telemetrySessionAwayAtMs >= SESSION_BACKGROUND_GRACE_MS) {
+                closeTelemetrySession(packageName);
+            }
+        };
+        scrollClassifierHandler.postDelayed(telemetrySessionCloseRunnable, SESSION_BACKGROUND_GRACE_MS);
+    }
+
+    private void closeTelemetrySession(String packageName) {
+        if (sessionTelemetryManager != null) {
+            long endedAt = System.currentTimeMillis();
+            long durationMs = getActiveSessionDurationMs();
+            boolean shouldAskForOutcome = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_ENABLED, false)
+                    && (pendingClassifierPackage == null
+                    || !packageName.equals(pendingClassifierPackage));
+            String evaluationSessionId = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_SESSION_ID, null);
+            String endedSessionPurpose = telemetryPurpose;
+            sessionTelemetryManager.finishWithoutIntervention(packageName, endedAt, durationMs);
+            if (shouldAskForOutcome && evaluationSessionId != null) {
+                showEvaluationOutcome(packageName, endedSessionPurpose, evaluationSessionId);
+            }
+        }
+        resetScrollClassifier(packageName);
+        if (packageName.equals(pendingClassifierPackage)) clearPendingClassifier(packageName);
+        if (packageName.equals(telemetryActivePackage)) telemetryActivePackage = null;
+        if (packageName.equals(classifierInterventionHandledPackage)) {
+            classifierInterventionHandledPackage = null;
+        }
+        clearConfirmedSessionMarker(packageName);
+        if (telemetrySessionCloseRunnable != null) {
+            scrollClassifierHandler.removeCallbacks(telemetrySessionCloseRunnable);
+            telemetrySessionCloseRunnable = null;
+        }
+        scrollClassifierHandler.removeCallbacks(telemetryOverrunRunnable);
+        telemetryPurpose = null;
+        telemetryExitAttempts = 0;
+        telemetrySessionAwayAccumulatedMs = 0L;
+        telemetrySessionStartedAtMs = 0L;
+        telemetrySessionGoalMs = 0L;
+        telemetrySessionOverrunMs = 0L;
+        telemetrySessionAwayAtMs = 0L;
+        telemetrySessionAwayAccumulatedMs = 0L;
+        telemetryExitAttempts = 0;
+    }
+
+    private void showEvaluationOutcome(String packageName, String purpose, String evaluationSessionId) {
+        scrollClassifierHandler.postDelayed(() -> {
+            Intent checkIn = new Intent(AppUsageAccessibilityService.this, SessionOutcomeActivity.class)
+                    .putExtra(SessionOutcomeActivity.EXTRA_PACKAGE, packageName)
+                    .putExtra(SessionOutcomeActivity.EXTRA_PURPOSE, purpose)
+                    .putExtra(SessionOutcomeActivity.EXTRA_EVALUATION_SESSION_ID, evaluationSessionId)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            try {
+                startActivity(checkIn);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "Unable to show session outcome check-in", e);
+            }
+        }, 300L);
+    }
+
+    private static final long SESSION_BACKGROUND_GRACE_MS = 120_000L;
+    private static final long SESSION_EXIT_RETURN_WINDOW_MS = 120_000L;
+    private static final int SESSION_EXIT_INTERVENTION_THRESHOLD = 2;
 
     private boolean isClassifierEnabled() {
         return sharedPreferences.getBoolean(SessionTelemetryManager.PREF_CLASSIFIER_ENABLED, false);
@@ -1160,6 +1583,8 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     private void handleScrollClassifier(AccessibilityEvent event, AccessibilityNodeInfo rootNode) {
         if (event.getEventType() != AccessibilityEvent.TYPE_VIEW_SCROLLED) return;
         String packageName = event.getPackageName() != null ? event.getPackageName().toString() : null;
+        restoreConfirmedSessionForPackage(packageName);
+        if (packageName != null && packageName.equals(sessionIntentPromptPackage)) return;
         if (packageName != null && packageName.equals(classifierInterventionHandledPackage)) return;
         if (!canRunScrollClassifier(packageName)) {
             if (packageName != null) {
@@ -1168,32 +1593,55 @@ public class AppUsageAccessibilityService extends AccessibilityService {
             }
             return;
         }
-        if (!packageName.equals(telemetryActivePackage)) {
-            sessionTelemetryManager.startSession(packageName, getAppNameFromPackageManager(packageName));
-            telemetryActivePackage = packageName;
+        if (packageName.equals(pendingClassifierPackage)
+                && !ScrollInterventionActivity.REASON_RAPID_SCROLL.equals(pendingInterventionReason)) {
+                if (isNaturalScrollStoppingPoint(event, rootNode, packageName)) showScrollIntervention(packageName);
+            return;
         }
+        // A scroll event must never bypass the pre-session intention check. The
+        // window-state path creates a session only after the user confirms it.
+        if (!packageName.equals(telemetryActivePackage)
+                || telemetrySessionStartedAtMs <= 0L
+                || packageName.equals(sessionIntentPromptPackage)) return;
 
         long now = android.os.SystemClock.elapsedRealtime();
         ScrollVelocityClassifier classifier = scrollClassifiers.computeIfAbsent(
                 packageName, ignored -> new ScrollVelocityClassifier());
         String contentSignature = buildScrollPositionSignature(rootNode, event);
-        if (classifier.observeContent(contentSignature, now)) {
-            if (packageName.equals(pendingClassifierPackage)) clearPendingClassifier(packageName);
-            return;
+        boolean longFormSurface = isLikelyLongFormContent(rootNode);
+        boolean declaredLongForm = SessionTelemetryManager.MODE_LONG_FORM.equals(
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString("session_mode_" + packageName, SessionTelemetryManager.MODE_STANDARD));
+        if (longFormSurface && declaredLongForm && sessionTelemetryManager != null) {
+            sessionTelemetryManager.markLongFormSurface(packageName);
+        }
+        boolean intentionalDwell = classifier.observeContent(contentSignature, now);
+        if (longFormSurface && declaredLongForm && intentionalDwell && sessionTelemetryManager != null) {
+            sessionTelemetryManager.recordLongFormEvidence(packageName,
+                    ScrollVelocityClassifier.STABLE_CONTENT_MS);
+        }
+        if (intentionalDwell) {
+            if (packageName.equals(pendingClassifierPackage)
+                    && ScrollInterventionActivity.REASON_RAPID_SCROLL.equals(pendingInterventionReason)) {
+                clearPendingClassifier(packageName);
+                return;
+            }
+            if (!packageName.equals(pendingClassifierPackage)) return;
         }
 
         boolean triggered = classifier.recordScroll(now);
         if (packageName.equals(pendingClassifierPackage)) {
             classifierLastScrollMs = now;
             pendingContentSignature = contentSignature;
-            pendingLikelyLongFormContent = isLikelyLongFormContent(rootNode);
+            pendingLikelyLongFormContent = longFormSurface && declaredLongForm;
         }
         if (triggered && pendingClassifierPackage == null) {
             pendingClassifierPackage = packageName;
+            pendingInterventionReason = ScrollInterventionActivity.REASON_RAPID_SCROLL;
             classifierPendingSinceMs = now;
             classifierLastScrollMs = now;
             pendingContentSignature = contentSignature;
-            pendingLikelyLongFormContent = isLikelyLongFormContent(rootNode);
+            pendingLikelyLongFormContent = longFormSurface && declaredLongForm;
             classifierPromptVisible = false;
             lastVideoControlStates.put(packageName, buildVideoControlSignature(rootNode));
             scrollClassifierHandler.removeCallbacks(scrollClassifierCheck);
@@ -1201,6 +1649,7 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         }
 
         if (packageName.equals(pendingClassifierPackage)
+                && (!pendingLikelyLongFormContent || !longFormSurface)
                 && isNaturalScrollStoppingPoint(event, rootNode, packageName)) {
             showScrollIntervention(packageName);
         }
@@ -1209,6 +1658,10 @@ public class AppUsageAccessibilityService extends AccessibilityService {
     private void checkPendingScrollBoundary(AccessibilityEvent event, String packageName,
             AccessibilityNodeInfo rootNode) {
         if (pendingClassifierPackage == null || !pendingClassifierPackage.equals(packageName)) return;
+        boolean declaredLongForm = SessionTelemetryManager.MODE_LONG_FORM.equals(
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString("session_mode_" + packageName, SessionTelemetryManager.MODE_STANDARD));
+        if (declaredLongForm && pendingLikelyLongFormContent) return;
         if (!classifierPromptVisible && isNaturalScrollStoppingPoint(event, rootNode, packageName)) {
             showScrollIntervention(packageName);
         }
@@ -1366,13 +1819,36 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         long now = android.os.SystemClock.elapsedRealtime();
         long elapsed = now - classifierPendingSinceMs;
         long settledFor = now - classifierLastScrollMs;
+        if (!ScrollInterventionActivity.REASON_RAPID_SCROLL.equals(pendingInterventionReason)) {
+            // Overrun and repeat-exit prompts wait for a semantic boundary when one
+            // appears, then use a bounded fallback so the prompt cannot be deferred
+            // indefinitely by a surface that exposes no useful accessibility cues.
+            if (elapsed >= CLASSIFIER_MAX_WAIT_MS) {
+                showScrollIntervention(pendingClassifierPackage);
+                return;
+            }
+            scrollClassifierHandler.postDelayed(scrollClassifierCheck,
+                    Math.min(500L, Math.max(1L, CLASSIFIER_MAX_WAIT_MS - elapsed)));
+            return;
+        }
         ScrollVelocityClassifier classifier = scrollClassifiers.get(pendingClassifierPackage);
         boolean intentionalDwell = classifier != null
                 && classifier.observeContent(pendingContentSignature, now);
+        boolean declaredLongForm = SessionTelemetryManager.MODE_LONG_FORM.equals(
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString("session_mode_" + pendingClassifierPackage, SessionTelemetryManager.MODE_STANDARD));
+        boolean stableLongForm = declaredLongForm && pendingLikelyLongFormContent
+                && (intentionalDwell || (classifier != null
+                && classifier.hasStableContent(pendingContentSignature, now)));
+        if (stableLongForm && sessionTelemetryManager != null) {
+            sessionTelemetryManager.recordLongFormEvidence(pendingClassifierPackage,
+                    ScrollVelocityClassifier.STABLE_CONTENT_MS);
+        }
 
         // A stable collection item/WebView is treated as intentional reading after 20 seconds.
         ScrollInterventionPolicy.Decision decision = ScrollInterventionPolicy.decide(
-                pendingLikelyLongFormContent, intentionalDwell, elapsed, settledFor,
+                declaredLongForm && pendingLikelyLongFormContent, stableLongForm,
+                elapsed, settledFor,
                 CLASSIFIER_SCROLL_SETTLE_MS, CLASSIFIER_MAX_WAIT_MS);
         if (decision == ScrollInterventionPolicy.Decision.CANCEL_AS_INTENTIONAL) {
             clearPendingClassifier(pendingClassifierPackage);
@@ -1393,6 +1869,12 @@ public class AppUsageAccessibilityService extends AccessibilityService {
 
     private void showScrollIntervention(String packageName) {
         if (classifierPromptVisible || packageName == null || !packageName.equals(pendingClassifierPackage)) return;
+        String evaluationGroup = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(SessionTelemetryManager.PREF_ACTIVE_SESSION_EVALUATION_GROUP, null);
+        if (SessionTelemetryManager.EVALUATION_CONTROL.equals(evaluationGroup)) {
+            clearPendingClassifier(packageName);
+            return;
+        }
         if (!canRunScrollClassifier(packageName)
                 || sharedPreferences.getBoolean("isServicePaused", false)) {
             clearPendingClassifier(packageName);
@@ -1403,6 +1885,13 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         Intent intent = new Intent(this, ScrollInterventionActivity.class)
                 .putExtra(ScrollInterventionActivity.EXTRA_TARGET_PACKAGE, packageName)
                 .putExtra(ScrollInterventionActivity.EXTRA_APP_NAME, getAppNameFromPackageManager(packageName))
+                .putExtra(ScrollInterventionActivity.EXTRA_USER_PURPOSE,
+                        PreferenceManager.getDefaultSharedPreferences(this)
+                                .getString("session_purpose_" + packageName, null))
+                .putExtra(ScrollInterventionActivity.EXTRA_SESSION_DURATION_MS, getActiveSessionDurationMs())
+                .putExtra(ScrollInterventionActivity.EXTRA_SESSION_GOAL_MINUTES,
+                        (int) Math.max(5L, telemetrySessionGoalMs / 60_000L))
+                .putExtra(ScrollInterventionActivity.EXTRA_TRIGGER_REASON, pendingInterventionReason)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         try {
             startActivity(intent);
@@ -1413,6 +1902,14 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         }
     }
 
+    private long getActiveSessionDurationMs() {
+        if (telemetrySessionStartedAtMs <= 0L) return 0L;
+        long elapsed = Math.max(0L, System.currentTimeMillis() - telemetrySessionStartedAtMs);
+        long currentAway = telemetrySessionAwayAtMs == 0L
+                ? 0L : Math.max(0L, System.currentTimeMillis() - telemetrySessionAwayAtMs);
+        return Math.max(0L, elapsed - telemetrySessionAwayAccumulatedMs - currentAway);
+    }
+
     private void clearPendingClassifier(String packageName) {
         if (packageName == null || !packageName.equals(pendingClassifierPackage)) return;
         scrollClassifierHandler.removeCallbacks(scrollClassifierCheck);
@@ -1421,6 +1918,7 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         classifierLastScrollMs = 0L;
         pendingContentSignature = null;
         pendingLikelyLongFormContent = false;
+        pendingInterventionReason = ScrollInterventionActivity.REASON_RAPID_SCROLL;
         classifierPromptVisible = false;
         resetScrollClassifier(packageName);
     }

@@ -46,10 +46,7 @@
         <activity
             android:name=".Activities.FocusMode"
             android:exported="false" />
-        <activity
-            android:name=".Activities.AttentionShopActivity"
-            android:exported="false"
-            android:label="Attention shop" />
+
         <activity
             android:name=".Activities.HomeActivity"
             android:launchMode="singleTask"
@@ -96,20 +93,26 @@
             android:taskAffinity=""
             android:theme="@style/Theme.NoScroll"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.cascade26.scrollbreak.Activities.HabitCreateActivity" android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.cascade26.scrollbreak.Activities.StatsActivity" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.HabitCreateActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.StatsActivity" android:exported="false" />
         <activity android:name=".Activities.AnalyticsActivity" android:exported="false" />
+        <activity android:name=".Activities.SessionOutcomeActivity" android:excludeFromRecents="true" android:exported="false" android:theme="@style/Theme.NoScroll" />
         <activity
             android:name=".Activities.ScrollInterventionActivity"
             android:excludeFromRecents="true"
             android:exported="false"
             android:theme="@style/Theme.NoScroll" />
-        <activity android:name="com.cascade26.scrollbreak.Activities.HabitStatActivity" />
+        <activity
+            android:name=".Activities.SessionIntentionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.NoScroll" />
+        <activity android:name="com.cascade26.scrollbreak.Activities.HabitStatActivity" android:exported="false" />
         
         <!-- Transparent activity for widget quick add task -->
         <activity
             android:name=".Activities.WidgetQuickAddActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.ScrollBreak.TransparentOverlay"
             android:windowSoftInputMode="adjustResize" />
@@ -145,6 +148,9 @@
             android:foregroundServiceType="specialUse"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Detecting distracting app usage, monitoring scrolling velocity, and applying app blocking during focus sessions." />
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -160,15 +166,7 @@
             android:name=".Receivers.NotificationDismissBroadcastReceiver"
             android:exported="false" />
 
-        <!-- Boot/package update receiver to restart services -->
-        <receiver
-            android:name=".Receivers.BootReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
+
 
         <service
             android:name=".Services.FocusService"
@@ -289,6 +287,15 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".Utils.ScrollBrakeVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
 
 
     </application>

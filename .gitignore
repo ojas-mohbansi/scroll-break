@@ -43,3 +43,5 @@ app/release/
 *.apks
 *.ipa
 *.zip
+
+node_modules/

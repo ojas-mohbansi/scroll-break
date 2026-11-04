@@ -12,10 +12,13 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve Room & Gson data models
+-keep class com.cascade26.scrollbreak.Models.** { *; }
+-keep class com.cascade26.scrollbreak.db.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep MPAndroidChart
+-keep class com.github.mikephil.charting.charts.** { *; }
+-keep class com.github.mikephil.charting.data.** { *; }
+
+# Keep Lottie
+-keep class com.airbnb.lottie.** { *; }

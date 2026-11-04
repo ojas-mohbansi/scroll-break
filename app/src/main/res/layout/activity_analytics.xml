@@ -47,6 +47,7 @@
             android:textColor="?attr/text_tertiary"
             android:textSize="14sp" />
 
+        <!-- 1. Time Reclaimed Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,6 +68,36 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 2. Visual Pie Chart: Success vs. Overrun Breakdown -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="?attr/surface_card"
+            app:cardCornerRadius="@dimen/component_corner_radius"
+            app:strokeColor="?attr/glass_stroke"
+            app:strokeWidth="1dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Session Success Breakdown"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/analyticsPieChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 3. Pause Success Rate Card with Visual Progress -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -78,9 +109,19 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/analytics_success_rate" android:textColor="?attr/text_tertiary" android:textSize="13sp" />
                 <TextView android:id="@+id/interventionSuccessRate" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="0%" android:textColor="?attr/text_primary" android:textSize="28sp" android:textStyle="bold" />
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressSuccessRate"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="12dp"
+                    android:progress="0"
+                    app:trackCornerRadius="4dp"
+                    app:indicatorColor="?attr/brand_accent_light"
+                    app:trackColor="?attr/glass_stroke" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 4. Goal Follow-Through Card with Visual Progress -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -92,11 +133,112 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/analytics_goal_adherence" android:textColor="?attr/text_tertiary" android:textSize="13sp" />
                 <TextView android:id="@+id/goalAdherence" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="0%" android:textColor="?attr/text_primary" android:textSize="28sp" android:textStyle="bold" />
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressGoalAdherence"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="12dp"
+                    android:progress="0"
+                    app:trackCornerRadius="4dp"
+                    app:indicatorColor="?attr/brand_accent_light"
+                    app:trackColor="?attr/glass_stroke" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <TextView android:id="@+id/analyticsSessions" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" android:gravity="center" android:text="0 intervention sessions"
+            android:layout_marginTop="8dp" android:gravity="center" android:text="0 focus sessions"
             android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="18dp" android:text="@string/analytics_overruns"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/analyticsOverruns" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="0 sessions" android:textColor="?attr/text_primary" android:textSize="22sp" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="14dp" android:text="@string/analytics_purpose_completion"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/analyticsPurposeCompletion" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="0%" android:textColor="?attr/text_primary" android:textSize="22sp" />
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressPurposeCompletion"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="6dp"
+            android:progress="0"
+            app:trackCornerRadius="3dp"
+            app:indicatorColor="?attr/brand_accent_light"
+            app:trackColor="?attr/glass_stroke" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="22dp" android:text="@string/analytics_long_form"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/analyticsLongFormCount" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="0 sessions" android:textColor="?attr/text_primary" android:textSize="22sp" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="@string/analytics_long_form_surface"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/analyticsLongFormSurface" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="0%" android:textColor="?attr/text_primary" android:textSize="22sp" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="@string/analytics_long_form_purpose"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/analyticsLongFormPurpose" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="0%" android:textColor="?attr/text_primary" android:textSize="22sp" />
+
+        <!-- 5. Visual Bar Chart: Prompt Comparison Graph -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="?attr/surface_card"
+            app:cardCornerRadius="@dimen/component_corner_radius"
+            app:strokeColor="?attr/glass_stroke"
+            app:strokeWidth="1dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="@string/analytics_outcome_comparison" android:textColor="?attr/text_primary" android:textSize="16sp" android:textStyle="bold" />
+
+                <com.cascade26.scrollbreak.Views.RoundedBarChart
+                    android:id="@+id/analyticsBarChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:layout_marginTop="12dp" />
+
+                <TextView android:id="@+id/analyticsIntervenedOutcome" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                    android:text="0%" android:textColor="?attr/text_primary" android:textSize="16sp" />
+                <TextView android:id="@+id/analyticsBaselineOutcome" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:text="0%" android:textColor="?attr/text_tertiary" android:textSize="14sp" />
+
+                <TextView android:id="@+id/analyticsRandomizedEffect" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                    android:text="+0 percentage points" android:textColor="?attr/brand_accent_light" android:textSize="16sp" android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView android:id="@+id/analyticsInterventionResponseCount" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:textColor="?attr/text_tertiary" android:textSize="12sp" />
+        <TextView android:id="@+id/analyticsControlResponseCount" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:textColor="?attr/text_tertiary" android:textSize="12sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/analytics_comparison_note"
+            android:textColor="?attr/text_tertiary" android:textSize="12sp" />
     </LinearLayout>
 </ScrollView>

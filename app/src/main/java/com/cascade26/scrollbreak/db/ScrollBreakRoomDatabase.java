@@ -35,7 +35,9 @@ import com.cascade26.scrollbreak.db.entities.QuestProgressEntity;
 import com.cascade26.scrollbreak.db.entities.AchievementEntity;
 import com.cascade26.scrollbreak.db.entities.CurrencyTransactionEntity;
 import com.cascade26.scrollbreak.db.entities.SessionLogEntity;
+import com.cascade26.scrollbreak.db.entities.BlocklistEntity;
 import com.cascade26.scrollbreak.db.dao.SessionLogDao;
+import com.cascade26.scrollbreak.db.dao.BlocklistDao;
 import java.util.concurrent.Executors;
 
 @Database(entities = {
@@ -54,8 +56,9 @@ import java.util.concurrent.Executors;
         QuestProgressEntity.class,
         AchievementEntity.class,
         CurrencyTransactionEntity.class,
-        SessionLogEntity.class
-}, version = 19, exportSchema = false)
+        SessionLogEntity.class,
+        BlocklistEntity.class
+}, version = 24, exportSchema = false)
 public abstract class ScrollBreakRoomDatabase extends RoomDatabase {
     private static volatile ScrollBreakRoomDatabase INSTANCE;
 
@@ -80,6 +83,8 @@ public abstract class ScrollBreakRoomDatabase extends RoomDatabase {
     public abstract GamificationDao gamificationDao();
 
     public abstract SessionLogDao sessionLogDao();
+
+    public abstract BlocklistDao blocklistDao();
 
     static final Migration MIGRATION_17_18 = new Migration(17, 18) {
         @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -106,6 +111,36 @@ public abstract class ScrollBreakRoomDatabase extends RoomDatabase {
                     + "outcomeResolved INTEGER NOT NULL, "
                     + "sessionGoalMs INTEGER NOT NULL, "
                     + "savedTimeMs INTEGER NOT NULL)");
+        }
+    };
+
+    static final Migration MIGRATION_19_20 = new Migration(19, 20) {
+        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN userPurpose TEXT");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN purposeCompleted INTEGER");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN overrunMs INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN exitAttempts INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    static final Migration MIGRATION_20_21 = new Migration(20, 21) {
+        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN sessionMode TEXT");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN longFormSurface INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN stableContentDwellMs INTEGER NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN interventionWasShown INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    static final Migration MIGRATION_21_22 = new Migration(21, 22) {
+        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN evaluationGroup TEXT");
+        }
+    };
+
+    static final Migration MIGRATION_22_23 = new Migration(22, 23) {
+        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE session_logs ADD COLUMN evaluationSessionId TEXT");
         }
     };
 
@@ -315,7 +350,8 @@ public abstract class ScrollBreakRoomDatabase extends RoomDatabase {
                             "scrollbreak.db")
                             .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
                                     MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
-                                    MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
+                                    MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19,
+                                    MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23)
                             .addCallback(new Callback() {
                                 @Override
                                 public void onCreate(@NonNull SupportSQLiteDatabase db) {

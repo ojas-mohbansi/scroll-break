@@ -66,7 +66,11 @@ public class OnBoardingAdapter extends PagerAdapter {
         sliderImg.setImageResource(images[position]);
         heading.setText(headings[position]);
         desc.setText(descriptions[position]);
-        // Apply layout changes based on the slide position
+
+        View consentContainer = view.findViewById(R.id.consentContainer);
+        if (consentContainer != null) {
+            consentContainer.setVisibility(position == headings.length - 1 ? View.VISIBLE : View.GONE);
+        }
 
         container.addView(view);
         view.setTag("view" + position);

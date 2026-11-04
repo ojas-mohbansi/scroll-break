@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="?attr/colorSurface">
+
+    <!-- Header Handle / Indicator -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="?attr/colorOutlineVariant"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.5"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="About &amp; Legal"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="?attr/text_primary"
+        android:layout_marginBottom="16dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingEnd="4dp">
+
+            <!-- ABOUT SECTION -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ABOUT"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="?attr/brand_accent"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="4dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="16dp"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:backgroundTint="?attr/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- About Scroll Brake -->
+                    <LinearLayout
+                        android:id="@+id/rowAboutApp"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/info"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="About Scroll Brake"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:alpha="0.2"/>
+
+                    <!-- Developers & Contact -->
+                    <LinearLayout
+                        android:id="@+id/rowDeveloperContact"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/globe"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Developers &amp; Contact"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:alpha="0.2"/>
+
+                    <!-- Open Source Licenses -->
+                    <LinearLayout
+                        android:id="@+id/rowOpenSourceCredits"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/book"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Open Source Licenses"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- LEGAL SECTION -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LEGAL"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="?attr/brand_accent"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:backgroundTint="?attr/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- End User License Agreement -->
+                    <LinearLayout
+                        android:id="@+id/rowEula"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/scroll_text"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="End User License Agreement"
+                            android:textSize="15sp"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:alpha="0.2"/>
+
+                    <!-- Privacy Policy -->
+                    <LinearLayout
+                        android:id="@+id/rowPrivacyPolicy"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/shield_check"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Privacy Policy"
+                            android:textSize="15sp"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:alpha="0.2"/>
+
+                    <!-- Accessibility Service Disclosure -->
+                    <LinearLayout
+                        android:id="@+id/rowAccessibilityApi"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/shield_alert"
+                            app:tint="?attr/brand_accent"
+                            android:layout_marginEnd="14dp"
+                            android:contentDescription="@null"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Accessibility Service Disclosure"
+                            android:textSize="15sp"
+                            android:textColor="?attr/text_primary"/>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="?attr/text_primary"
+                            android:alpha="0.4"
+                            android:contentDescription="@null"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAboutHubClose"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="@string/done"
+        app:cornerRadius="12dp"
+        style="@style/Widget.Material3.Button"/>
+
+</LinearLayout>

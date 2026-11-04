@@ -10,6 +10,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -19,6 +20,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.cascade26.scrollbreak.Adapters.OnBoardingAdapter;
 import com.cascade26.scrollbreak.R;
 import com.cascade26.scrollbreak.Utils.Utils;
@@ -177,14 +180,16 @@ public class OnBoarding extends AppCompatActivity {
                 goIcon.setImageDrawable(ContextCompat.getDrawable(OnBoarding.this, R.drawable.ic_right_arrow));
                 goText.setText(ContextCompat.getString(OnBoarding.this, R.string.next));
                 goIcon.setPadding(dpToPx(0), dpToPx(0), dpToPx(0), dpToPx(0));
+                goLayout.setEnabled(true);
+                goLayout.setAlpha(1.0f);
                 goLayout.setOnClickListener(v -> viewPager.setCurrentItem(currentPosition + 1));
                 skipBtn.setVisibility(View.VISIBLE);
             } else {
                 goIcon.setImageDrawable(ContextCompat.getDrawable(OnBoarding.this, R.drawable.circle_check));
                 goIcon.setPadding(dpToPx(1), dpToPx(1), dpToPx(1), dpToPx(1));
                 goText.setText(ContextCompat.getString(OnBoarding.this, R.string.lets_go));
-                goLayout.setOnClickListener(v -> moveToNextActivity());
                 skipBtn.setVisibility(View.INVISIBLE);
+                setupConsentValidation();
             }
         }
 
@@ -199,6 +204,110 @@ public class OnBoarding extends AppCompatActivity {
             int color = ContextCompat.getColor(this, active ? R.color.brand_accent : R.color.track_unchecked_color);
             gd.setColor(color);
         }
+    }
+
+    private boolean termsAccepted = false;
+
+    private void showTermsDialog(MaterialCheckBox cbTerms) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_terms_scroll, null);
+        androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme)
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        ScrollView termsScrollView = dialogView.findViewById(R.id.termsScrollView);
+        TextView scrollHintText = dialogView.findViewById(R.id.scrollHintText);
+        MaterialButton btnAcceptTerms = dialogView.findViewById(R.id.btnAcceptTerms);
+
+        if (termsScrollView != null && scrollHintText != null && btnAcceptTerms != null) {
+            termsScrollView.post(() -> {
+                if (!termsScrollView.canScrollVertically(1)) {
+                    btnAcceptTerms.setEnabled(true);
+                    btnAcceptTerms.setAlpha(1.0f);
+                    scrollHintText.setText("✓ Read & verified");
+                }
+            });
+
+            termsScrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                View view = termsScrollView.getChildAt(termsScrollView.getChildCount() - 1);
+                if (view != null) {
+                    int diff = (view.getBottom() - (termsScrollView.getHeight() + termsScrollView.getScrollY()));
+                    if (diff <= 20) {
+                        btnAcceptTerms.setEnabled(true);
+                        btnAcceptTerms.setAlpha(1.0f);
+                        scrollHintText.setText("✓ Read & verified");
+                    }
+                }
+            });
+
+            btnAcceptTerms.setOnClickListener(v -> {
+                termsAccepted = true;
+                cbTerms.setChecked(true);
+                dialog.dismiss();
+                updateConsentState(cbTerms);
+            });
+        }
+
+        dialog.setOnCancelListener(dialogInterface -> {
+            if (!termsAccepted) {
+                cbTerms.setChecked(false);
+            }
+            updateConsentState(cbTerms);
+        });
+
+        dialog.show();
+    }
+
+    private void setupConsentValidation() {
+        View slideView = viewPager.findViewWithTag("view4");
+        if (slideView == null) {
+            goLayout.setEnabled(true);
+            goLayout.setAlpha(1.0f);
+            goLayout.setOnClickListener(v -> moveToNextActivity());
+            return;
+        }
+
+        MaterialCheckBox cbTerms = slideView.findViewById(R.id.cbPrivacyTerms);
+        MaterialCheckBox cbAccess = slideView.findViewById(R.id.cbAccessibilityConsent);
+
+        if (cbTerms == null || cbAccess == null) {
+            goLayout.setEnabled(true);
+            goLayout.setAlpha(1.0f);
+            goLayout.setOnClickListener(v -> moveToNextActivity());
+            return;
+        }
+
+        cbTerms.setOnClickListener(v -> {
+            if (cbTerms.isChecked()) {
+                if (!termsAccepted) {
+                    cbTerms.setChecked(false);
+                    showTermsDialog(cbTerms);
+                } else {
+                    updateConsentState(cbTerms);
+                }
+            } else {
+                termsAccepted = false;
+                updateConsentState(cbTerms);
+            }
+        });
+
+        cbAccess.setOnCheckedChangeListener((buttonView, isChecked) -> updateConsentState(cbTerms));
+
+        updateConsentState(cbTerms);
+    }
+
+    private void updateConsentState(MaterialCheckBox cbTerms) {
+        View slideView = viewPager.findViewWithTag("view4");
+        if (slideView == null) return;
+        MaterialCheckBox cbAccess = slideView.findViewById(R.id.cbAccessibilityConsent);
+        boolean fullyConsented = cbTerms.isChecked() && cbAccess != null && cbAccess.isChecked();
+        goLayout.setEnabled(fullyConsented);
+        goLayout.setAlpha(fullyConsented ? 1.0f : 0.4f);
+        goLayout.setOnClickListener(v -> {
+            if (fullyConsented) {
+                moveToNextActivity();
+            }
+        });
     }
 
     private void moveToNextActivity() {

@@ -785,7 +785,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 else if (v == labelPermanent) progress = 4;
 
 
-                    seekBar.setProgress(progress);
+                seekBar.setProgress(progress);
                 updateIntensityUI(progress);
                 if (onBlockerIntensityChangeListener != null) {
                     onBlockerIntensityChangeListener.onIntensityChanged(item.getId(), progress);

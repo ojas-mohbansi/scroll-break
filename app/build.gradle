@@ -39,9 +39,11 @@ android {
         release {
             if (hasSigningProps) {
                 signingConfig signingConfigs.shared
+            } else {
+                signingConfig signingConfigs.debug
             }
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -110,15 +112,3 @@ dependencies {
     implementation libs.androidx.room.runtime
     annotationProcessor libs.androidx.room.compiler
 }
-
-
-
-
-
-
-
-
-
-
-
-

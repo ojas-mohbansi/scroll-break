@@ -1477,6 +1477,7 @@ public class HomeFragment extends Fragment {
             if (view != null) view.post(this::animateEntrance);
         }
         if (view != null) {
+            checkAndShowPermissionCard();
             setupTaskList();
         }
         // Always refresh service state from prefs on resume

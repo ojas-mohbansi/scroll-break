@@ -60,14 +60,16 @@ public class ColorSelectionAdapter extends RecyclerView.Adapter<ColorSelectionAd
         holder.itemView.setScaleY(scale);
         
         holder.itemView.setOnClickListener(v -> {
+            int adapterPos = holder.getBindingAdapterPosition();
+            if (adapterPos == RecyclerView.NO_POSITION) return;
             int oldPos = selectedPosition;
-            selectedPosition = position;
+            selectedPosition = adapterPos;
             if (oldPos != -1) {
                 notifyItemChanged(oldPos);
             }
             notifyItemChanged(selectedPosition);
             
-            if (listener != null) listener.onColorSelected(colorPair);
+            if (listener != null) listener.onColorSelected(colorPairs.get(adapterPos));
         });
     }
 

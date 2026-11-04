@@ -256,7 +256,7 @@ public class FocusMode extends AppCompatActivity {
                     if (isBound && focusService != null) {
                         focusService.stopService();
                     }
-                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE));
+                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE).setPackage(getPackageName()));
                     finish();
                 });
     }
@@ -318,7 +318,7 @@ public class FocusMode extends AppCompatActivity {
                     ? "Task completed for today!"
                     : "Task completed: " + completedTask.getName();
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-            sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE));
+            sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE).setPackage(getPackageName()));
         }
     }
 
@@ -1561,7 +1561,7 @@ public class FocusMode extends AppCompatActivity {
                     if (isBound && focusService != null) {
                         focusService.stopService();
                     }
-                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE));
+                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE).setPackage(getPackageName()));
                     finish();
                 });
     }
@@ -1604,7 +1604,7 @@ public class FocusMode extends AppCompatActivity {
                     Toast.makeText(this, "Extended by " + extendMins + " min", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
-                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE));
+                    sendBroadcast(new Intent(FocusService.ACTION_TASK_FOCUS_UPDATE).setPackage(getPackageName()));
                     finish();
                 })
                 .show();

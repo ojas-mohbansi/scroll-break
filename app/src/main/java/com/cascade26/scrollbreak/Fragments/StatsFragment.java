@@ -50,6 +50,14 @@ public class StatsFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getView() != null) {
+            StatsActivity.setupEmbeddedStats(this, getView());
+        }
+    }
+
     private static class StatsPagerAdapter extends FragmentStateAdapter {
         StatsPagerAdapter(@NonNull Fragment fragment) { super(fragment); }
 

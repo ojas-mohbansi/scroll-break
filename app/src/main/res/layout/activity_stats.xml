@@ -95,6 +95,7 @@
         android:layout_marginBottom="10dp"
         android:text="@string/analytics_open"
         android:textAllCaps="false"
+        android:textColor="?attr/text_primary"
         app:backgroundTint="?attr/surface_card"
         app:cornerRadius="@dimen/component_corner_radius"
         app:strokeColor="?attr/glass_stroke"

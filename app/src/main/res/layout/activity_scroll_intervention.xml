@@ -21,6 +21,15 @@
         <TextView android:id="@+id/interventionAppName" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center"
             android:textColor="?attr/text_tertiary" android:textSize="16sp" />
+        <TextView android:id="@+id/interventionReason" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="14dp" android:gravity="center"
+            android:textColor="?attr/brand_accent_light" android:textSize="15sp" android:textStyle="bold" />
+        <TextView android:id="@+id/interventionSessionGoal" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp" android:gravity="center"
+            android:textColor="?attr/text_tertiary" android:textSize="13sp" />
+        <TextView android:id="@+id/interventionPurpose" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="14dp" android:gravity="center"
+            android:textColor="?attr/text_primary" android:textSize="15sp" />
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="28dp" android:hint="@string/scroll_intent_hint"

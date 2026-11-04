@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.cascade26.scrollbreak.Fragments.AddTaskBottomSheet;
@@ -24,6 +25,13 @@ public class WidgetQuickAddActivity extends AppCompatActivity implements AddTask
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
         setContentView(R.layout.activity_widget_quick_add);
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
 
         // Show the AddTaskBottomSheet immediately
         if (savedInstanceState == null) {
@@ -72,11 +80,5 @@ public class WidgetQuickAddActivity extends AppCompatActivity implements AddTask
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
                 new ComponentName(this, TasksWidgetProvider.class));
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list_view);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finish();
     }
 }

@@ -60,6 +60,30 @@ The scroll counter relies on app-specific accessibility event and view detectors
 
 Issues and pull requests are welcome. Keep user data local by default, preserve existing preference/database compatibility, and verify Android permission behavior on a device or emulator when changing blocker, focus, or tracking flows. Run the relevant Gradle unit tests and build before submitting changes.
 
+## 🙏 Acknowledgements & Open Source Credits
+
+Scroll Brake proudly stands on the shoulders of the open-source Android community. We gratefully acknowledge the following projects and technologies:
+
+### Google Open Source & Android Ecosystem
+- **[Android Jetpack & Material Components](https://developer.android.com/jetpack)** — Modern UI components and architecture libraries. *(Apache License 2.0)*
+- **[Room Persistence Library](https://developer.android.com/training/data-storage/room)** — SQLite ORM for 100% local persistence. *(Apache License 2.0)*
+- **[Gson](https://github.com/google/gson)** — Java serialization/deserialization library. *(Apache License 2.0)*
+
+### Community Libraries
+- **[Lottie Android](https://github.com/Airbnb/lottie-android)** (Airbnb) — Vector animation rendering. *(Apache License 2.0)*
+- **[MPAndroidChart](https://github.com/PhilJay/MPAndroidChart)** (Philipp Jahoda) — Android chart and visualization library. *(Apache License 2.0)*
+- **[Balloon Tooltips](https://github.com/skydoves/Balloon)** (Jaewoong Eum / skydoves) — Tooltip popup framework. *(Apache License 2.0)*
+- **[ProgressView](https://github.com/skydoves/ProgressView)** (Jaewoong Eum / skydoves) — Animated progress bar library. *(Apache License 2.0)*
+- **[CircularSeekBar](https://github.com/tankery/CircularSeekBar)** (Tankery Chen / tankery) — Circular seekbar control for Android. *(Apache License 2.0)*
+
+---
+
+## 📬 Contact & Support
+
+- **Repository**: [https://github.com/ojas-mohbansi/Scroll-Brake](https://github.com/ojas-mohbansi/Scroll-Brake)
+- **Support Email**: `ojasmohbansi+scrollbreak@gmail.com`
+
+
 ## License
 
 See [LICENSE](LICENSE).

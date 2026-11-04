@@ -40,7 +40,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.cascade26.scrollbreak.Activities.BlockerControlActivity;
-import com.cascade26.scrollbreak.Activities.FocusMode;
 import com.cascade26.scrollbreak.Activities.HomeActivity;
 import com.cascade26.scrollbreak.Adapters.HomePagerAdapter;
 import com.cascade26.scrollbreak.Adapters.SettingsAdapter;
@@ -49,6 +48,8 @@ import com.cascade26.scrollbreak.R;
 import com.cascade26.scrollbreak.Receivers.ScrollBreakDeviceAdminReceiver;
 import com.cascade26.scrollbreak.Services.AppUsageAccessibilityService;
 import com.cascade26.scrollbreak.Utils.AlarmUtils;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.cascade26.scrollbreak.Utils.BackupManager;
 import com.cascade26.scrollbreak.Utils.SettingsLockManager;
 import com.cascade26.scrollbreak.Utils.Utils;
@@ -67,7 +68,6 @@ public class SettingsFragment extends Fragment {
 
     private static final int ID_KEEP_ALIVE = 3;
     private static final int ID_POPUP_DURATION = 8;
-    private static final int ID_THEME = 9;
     private static final int ID_SCROLL_COUNTER = 10;
     private static final int ID_SCROLL_TAB = 11;
     private static final int ID_ROUTINES = 15;
@@ -89,6 +89,7 @@ public class SettingsFragment extends Fragment {
     private ActivityResultLauncher<Intent> exportLauncher;
     private ActivityResultLauncher<Intent> importLauncher;
     private ActivityResultLauncher<Intent> challengeLauncher;
+    private ActivityResultLauncher<Intent> vpnPermissionLauncher;
     private Runnable pendingAuthCallback;
     private Runnable pendingCancelCallback;
     private DevicePolicyManager devicePolicyManager;
@@ -384,6 +385,39 @@ public class SettingsFragment extends Fragment {
                     startActivity(intent);
                 }));
 
+        settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "SECURITY & PROTECTION"));
+
+        SettingsLockManager settingsLockMgr = new SettingsLockManager(requireContext());
+        boolean isSettingsLockOn = settingsLockMgr.isLockEnabled();
+        settingsItems.add(new SettingsItem(990, SettingsItem.TYPE_SWITCH, "Settings Lock",
+                "Require password/PIN before changing protection settings",
+                R.drawable.shield, purpleIcon)
+                .setIconValues(R.drawable.shape_circle, popupBg)
+                .setSwitch(true, isSettingsLockOn, (buttonView, isChecked) -> {
+                    lockedSwitchAction("Change Settings Lock", buttonView, !isChecked, isChecked, () -> {
+                        settingsLockMgr.setLockEnabled(isChecked);
+                    });
+                }));
+
+        boolean isDeviceAdminOn = devicePolicyManager.isAdminActive(deviceAdminComponent);
+        settingsItems.add(new SettingsItem(991, SettingsItem.TYPE_SWITCH, "Uninstall Protection",
+                "Prevent unauthorized app uninstallation via Device Admin",
+                R.drawable.shield, purpleIcon)
+                .setIconValues(R.drawable.shape_circle, popupBg)
+                .setSwitch(true, isDeviceAdminOn, (buttonView, isChecked) -> {
+                    lockedSwitchAction("Change Uninstall Protection", buttonView, !isChecked, isChecked, () -> {
+                        if (isChecked) {
+                            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdminComponent);
+                            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Android requires Device Admin to be active before it asks for confirmation when you uninstall Scroll Break.");
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(requireContext(), "Disable Uninstall Protection in Security Settings", Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS));
+                        }
+                    });
+                }));
+
         settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "UPCOMING FEATURES"));
 
         int orangeIcon = Color.parseColor("#FF9800");
@@ -394,17 +428,210 @@ public class SettingsFragment extends Fragment {
                 .setOnClickListener(v ->
                         Toast.makeText(requireContext(), "Coming Soon \uD83D\uDE80", Toast.LENGTH_SHORT).show()));
 
-        // App Blocker Challenge shifted to BLOCKING RULES
-
         settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "DATA MANAGEMENT"));
-        settingsItems.add(new SettingsItem(ID_BACKUP, SettingsItem.TYPE_BACKUP, "Data Backup",
-                "Import or export your data", R.drawable.backup, tealIcon).setIconValues(R.drawable.shape_circle, mobileBg));
+        settingsItems.add(new SettingsItem(ID_BACKUP, SettingsItem.TYPE_SWITCH, "Data Backup",
+                "Tap to export or import your data", R.drawable.backup, tealIcon)
+                .setIconValues(R.drawable.shape_circle, mobileBg)
+                .setSwitch(false, false, null)
+                .setArrow(true)
+                .setOnClickListener(v -> showBackupPopup()));
 
-        settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "ABOUT SCROLL BREAK"));
-        settingsItems.add(new SettingsItem(1001, SettingsItem.TYPE_SWITCH, "Built by",
-                getString(R.string.team_credits), R.drawable.info, tealIcon));
+        settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "SYSTEM"));
+
+        settingsItems.add(new SettingsItem(1001, SettingsItem.TYPE_SWITCH, "About",
+                "App info, terms, privacy & licenses", R.drawable.info, tealIcon)
+                .setIconValues(R.drawable.shape_circle, popupBg)
+                .setArrow(true)
+                .setOnClickListener(v -> showAboutHubDialog()));
 
         addPermissionCards();
+    }
+
+    private void showBackupPopup() {
+        String[] options = {"Export Backup File", "Import Backup File (Merge)", "Import Backup File (Override/Replace)"};
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Data Backup & Restore")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("application/json");
+                        intent.putExtra(Intent.EXTRA_TITLE, "scroll_brake_backup.json");
+                        exportLauncher.launch(intent);
+                    } else if (which == 1) {
+                        isImportOverride = false;
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("*/*");
+                        importLauncher.launch(intent);
+                    } else if (which == 2) {
+                        isImportOverride = true;
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("*/*");
+                        importLauncher.launch(intent);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showLegalDetailDialog(String title, String content) {
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_legal_detail, null);
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        dialog.setContentView(view);
+
+        TextView titleView = view.findViewById(R.id.legalDetailTitle);
+        TextView contentView = view.findViewById(R.id.legalDetailContent);
+        MaterialButton closeBtn = view.findViewById(R.id.btnLegalDetailClose);
+
+        if (titleView != null) titleView.setText(title);
+        if (contentView != null) contentView.setText(content);
+        if (closeBtn != null) closeBtn.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void showAboutHubDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_about_legal_hub, null);
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        dialog.setContentView(view);
+
+        MaterialButton closeBtn = view.findViewById(R.id.btnAboutHubClose);
+        if (closeBtn != null) closeBtn.setOnClickListener(v -> dialog.dismiss());
+
+        View aboutApp = view.findViewById(R.id.rowAboutApp);
+        View devContact = view.findViewById(R.id.rowDeveloperContact);
+        View openSource = view.findViewById(R.id.rowOpenSourceCredits);
+
+        if (aboutApp != null) {
+            aboutApp.setOnClickListener(v -> showLegalDetailDialog("About Scroll Brake",
+                    "Scroll Brake - Digital Wellbeing Assistant\n\n" +
+                            "Version: " + com.cascade26.scrollbreak.BuildConfig.VERSION_NAME + "\n" +
+                            "Build: 2026.release\n\n" +
+                            "Scroll Brake is crafted to help you break infinite doom-scrolling loops, establish atomic focus rituals, and reclaim your time and attention.\n\n" +
+                            "Developers:\n" +
+                            "• Ojas S.K Mohbansi\n" +
+                            "• Parth Mankawade\n" +
+                            "• Bhavya Gautam\n" +
+                            "• Mohammed Parvez\n\n" +
+                            "Designed with privacy-first principles.\n\n" +
+                            "Copyright & License:\n" +
+                            "© 2026 Scroll Brake Contributors. All rights reserved.\n" +
+                            "Free software licensed under GNU Affero General Public License (AGPL v3.0)."));
+        }
+
+        if (devContact != null) {
+            devContact.setOnClickListener(v -> showLegalDetailDialog("Developers & Contact",
+                    "Developer Information:\n\n" +
+                            "Developer: Ojas Mohbansi\n" +
+                            "Repository: https://github.com/ojas-mohbansi/Scroll-Brake\n" +
+                            "Support Email: ojasmohbansi+scrollbreak@gmail.com\n\n" +
+                            "We welcome feedback and contributions."));
+        }
+
+        if (openSource != null) {
+            openSource.setOnClickListener(v -> showLegalDetailDialog("Open Source Licenses",
+                    "Open Source Acknowledgements & Licenses:\n\n" +
+                            "Scroll Brake proudly stands on the shoulders of the open-source Android community:\n\n" +
+                            "1. Android Jetpack & Material Components\n" +
+                            "   • Provider: Google LLC\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "2. Room Database Persistence Library\n" +
+                            "   • Provider: Google LLC\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "3. Gson JSON Serialization Library\n" +
+                            "   • Provider: Google LLC\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "4. Lottie Android Animations\n" +
+                            "   • Provider: Airbnb, Inc.\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "5. MPAndroidChart\n" +
+                            "   • Provider: Philipp Jahoda (PhilJay)\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "6. Balloon Tooltips & ProgressView\n" +
+                            "   • Provider: Jaewoong Eum (skydoves)\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "7. CircularSeekBar\n" +
+                            "   • Provider: Tankery Chen (tankery)\n" +
+                            "   • License: Apache License 2.0\n\n" +
+                            "Scroll Brake itself is licensed under the terms of the GNU Affero General Public License (AGPL v3.0)."));
+        }
+
+        View eula = view.findViewById(R.id.rowEula);
+        View privacy = view.findViewById(R.id.rowPrivacyPolicy);
+        View accessibility = view.findViewById(R.id.rowAccessibilityApi);
+
+        String eulaText = "END USER LICENSE AGREEMENT (EULA) & PRIVACY POLICY\n\n" +
+                "Application Name: Scroll Brake\n" +
+                "Developer: Ojas Mohbansi\n" +
+                "Repository: https://github.com/ojas-mohbansi/Scroll-Brake\n" +
+                "Contact Email: ojasmohbansi+scrollbreak@gmail.com\n" +
+                "Age Suitability: 12+ (Suitable for users above 12 years of age)\n\n" +
+                "1. AGREEMENT TO TERMS\n" +
+                "By downloading, installing, accessing, or using Scroll Brake, you agree to be bound by this EULA and Privacy Policy. Scroll Brake may be distributed directly via GitHub, direct download, or app distribution platforms.\n\n" +
+                "2. INTENDED AUDIENCE & AGE RATING\n" +
+                "Scroll Brake is designed for users above 12 years of age (12+). Users under 12 should use the app with parent/guardian supervision.\n\n" +
+                "3. GRANT OF LICENSE\n" +
+                "The developer grants you a personal, non-exclusive, non-transferable, revocable license to run the app on your personal Android device for non-commercial digital wellbeing purposes.\n\n" +
+                "4. FULL TRANSPARENCY & 100% ON-DEVICE PRIVACY\n" +
+                "• Local Storage Only: All usage metrics, session logs, and habit tracking stay on your local device in a secure Room database.\n" +
+                "• Zero Cloud Telemetry: We do not operate remote servers, tracking backends, or data collection services.\n\n" +
+                "5. ANDROID ACCESSIBILITY SERVICE API DISCLOSURE\n" +
+                "Scroll Brake uses AccessibilityService strictly for:\n" +
+                "• App & Screen Detection: Detecting restricted apps/sites during Focus Mode.\n" +
+                "• Scroll Counting: Recognizing doom-scrolling patterns to suggest pauses.\n" +
+                "• Focus Enforcement: Preventing distractions during focus sessions.\n" +
+                "Safeguards: No screen text reading, no keyboard logging, no remote transmission.\n\n" +
+                "6. USER RESPONSIBILITIES & PERMISSIONS\n" +
+                "You control app rules and permissions (Accessibility, Notifications, Overlay) and can manage or revoke them anytime in Android System Settings.\n\n" +
+                "7. DISCLAIMER OF WARRANTY & LIABILITY\n" +
+                "Scroll Brake is provided 'as is' without warranties. The developer shall not be liable for indirect damages or missed notifications.\n\n" +
+                "8. CONTACT\n" +
+                "Support Email: ojasmohbansi+scrollbreak@gmail.com\n" +
+                "Repository: https://github.com/ojas-mohbansi/Scroll-Brake";
+
+        if (eula != null) {
+            eula.setOnClickListener(v -> showLegalDetailDialog("End User License Agreement", eulaText));
+        }
+
+        if (privacy != null) {
+            privacy.setOnClickListener(v -> showLegalDetailDialog("Privacy Policy",
+                    "100% On-Device Privacy Guarantee:\n\n" +
+                            "• Local Storage Only: Scroll Brake stores all app usage statistics, screen time data, focus session logs, and habit streaks locally on your device in a secure Room database.\n" +
+                            "• Zero Cloud Telemetry: We do not collect, upload, sell, or transmit your personal data or browsing history to any remote servers.\n" +
+                            "• Complete Control: You can export, backup, or wipe your local data at any time from app settings."));
+        }
+
+        if (accessibility != null) {
+            accessibility.setOnClickListener(v -> showLegalDetailDialog("Accessibility Service Disclosure",
+                    "Android Accessibility Service Usage:\n\n" +
+                            "Scroll Brake uses the AccessibilityService API strictly for:\n" +
+                            "1. Detecting when restricted apps or websites are active on screen to trigger mindfulness pauses and focus blocking.\n" +
+                            "2. Measuring scroll activity when Smart Scroll Intervention is active.\n\n" +
+                            "Privacy Safeguards:\n" +
+                            "• We DO NOT read, collect, or store screen text, keystrokes, personal messages, or credentials.\n" +
+                            "• The accessibility service operates 100% locally on your device."));
+        }
+
+        dialog.show();
+    }
+
+    private void showInfoDialog(String title, String message) {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
+    private void openUrl(String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Unable to open browser link", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void addPermissionCards() {
@@ -504,7 +731,7 @@ public class SettingsFragment extends Fragment {
             defaultSharedPreferences.edit().putBoolean("keepServiceAlive", true).apply();
             AlarmUtils.scheduleAlarm(requireContext());
             // Force immediate update
-            requireContext().sendBroadcast(new Intent(AppUsageAccessibilityService.ACTION_UPDATE_KEEP_ALIVE));
+            requireContext().sendBroadcast(new Intent(AppUsageAccessibilityService.ACTION_UPDATE_KEEP_ALIVE).setPackage(requireContext().getPackageName()));
         } else {
             defaultSharedPreferences.edit().putBoolean("keepServiceAlive", false).apply();
             AlarmUtils.cancelAlarm(requireContext());
@@ -607,6 +834,18 @@ public class SettingsFragment extends Fragment {
 
 
     private void registerForPermission() {
+        vpnPermissionLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        requireContext().startService(new Intent(requireContext(), com.cascade26.scrollbreak.Utils.ScrollBrakeVpnService.class));
+                        Toast.makeText(requireContext(), "DNS Protection VPN started", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "VPN permission denied", Toast.LENGTH_SHORT).show();
+                        defaultSharedPreferences.edit().putBoolean("pref_vpn_enabled", false).apply();
+                    }
+                    refreshList();
+                });
+
         batteryOptimizationLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     refreshList();
@@ -740,7 +979,8 @@ public class SettingsFragment extends Fragment {
                         .putString(HomeActivity.PREF_START_FRAGMENT, HomeActivity.START_FRAGMENT_SETTINGS).apply();
             }
             Utils.applyAppThemeFromPrefs(requireContext());
-            View root = getView().findViewById(R.id.headerContainer);
+            View currentView = getView();
+            View root = currentView != null ? currentView.findViewById(R.id.headerContainer) : null;
             Runnable doRecreate = () -> {
                 if (isAdded())
                     requireActivity().recreate();

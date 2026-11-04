@@ -41,6 +41,49 @@ class ScrollVelocityClassifierTest {
     }
 
     @Test
+    fun stableContentRequiresSameStructuralSignatureForTwentySeconds() {
+        val classifier = ScrollVelocityClassifier()
+
+        assertFalse(classifier.observeContent("reader:position-1", 1_000L))
+        assertFalse(classifier.observeContent("reader:position-1", 20_999L))
+        assertTrue(classifier.observeContent("reader:position-1", 21_000L))
+        assertFalse(classifier.observeContent("reader:position-2", 22_000L))
+    }
+
+    @Test
+    fun stableContentIsNotConfirmedUntilTheFullDwellWindow() {
+        val classifier = ScrollVelocityClassifier()
+        classifier.observeContent("reader:position-1", 1_000L)
+
+        assertFalse(classifier.hasStableContent("reader:position-1", 1_001L))
+        assertFalse(classifier.hasStableContent("reader:position-1", 20_999L))
+        assertTrue(classifier.hasStableContent("reader:position-1", 21_000L))
+        assertFalse(classifier.hasStableContent("reader:position-2", 21_000L))
+    }
+
+    @Test
+    fun explicitLongFormModeNeedsAStableLongFormSurfaceToSuppressPrompt() {
+        assertEquals(
+            ScrollInterventionPolicy.Decision.CANCEL_AS_INTENTIONAL,
+            ScrollInterventionPolicy.decide(
+                likelyLongForm = true,
+                stableLongFormContent = true,
+                elapsedSinceThresholdMs = ScrollVelocityClassifier.STABLE_CONTENT_MS,
+                settledForMs = ScrollVelocityClassifier.STABLE_CONTENT_MS
+            )
+        )
+        assertEquals(
+            ScrollInterventionPolicy.Decision.SHOW,
+            ScrollInterventionPolicy.decide(
+                likelyLongForm = false,
+                stableLongFormContent = false,
+                elapsedSinceThresholdMs = ScrollVelocityClassifier.STABLE_CONTENT_MS,
+                settledForMs = 0L
+            )
+        )
+    }
+
+    @Test
     fun resetClearsWindowAndStableContentTracking() {
         val classifier = ScrollVelocityClassifier()
         repeat(ScrollVelocityClassifier.THRESHOLD_SCROLLS) { classifier.recordScroll(1_000L + it) }

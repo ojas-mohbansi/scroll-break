@@ -51,15 +51,53 @@
         android:layout_marginStart="25dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="25dp"
-        android:alpha="0.5"
+        android:alpha="0.8"
         android:fontFamily="@font/inter18regular"
         android:lineSpacingExtra="4dp"
         android:text="@string/desc1"
         android:textAlignment="center"
         android:textColor="?attr/tintGlobalColor"
-        android:textSize="14sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sliderHead" />
+
+    <!-- Mandatory Legal & Permission Consent Container (Shown on final slide) -->
+    <LinearLayout
+        android:id="@+id/consentContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sliderDesc">
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbPrivacyTerms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:fontFamily="@font/inter18regular"
+            android:text="@string/onboarding_consent_terms"
+            android:textColor="?attr/tintGlobalColor"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbAccessibilityConsent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="false"
+            android:fontFamily="@font/inter18regular"
+            android:text="@string/onboarding_consent_accessibility"
+            android:textColor="?attr/tintGlobalColor"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

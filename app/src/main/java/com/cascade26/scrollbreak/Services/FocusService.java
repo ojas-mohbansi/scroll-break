@@ -719,6 +719,7 @@ public class FocusService extends Service {
                 updateLinkedTaskStatus(linkedTaskId, "IDLE", elapsedFocusMillis);
                 // Broadcast so TasksFragment can refresh the list
                 Intent taskUpdate = new Intent(ACTION_TASK_FOCUS_UPDATE);
+                taskUpdate.setPackage(getPackageName());
                 taskUpdate.putExtra(EXTRA_TASK_ID, linkedTaskId);
                 sendBroadcast(taskUpdate);
                 linkedTaskId = null;
