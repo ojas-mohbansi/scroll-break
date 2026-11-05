@@ -87,4 +87,4 @@ Scroll Brake proudly stands on the shoulders of the open-source Android communit
 ## License
 
 See [LICENSE](LICENSE).
-See [End-user license agreement](EULA,md)
+See [End-user license agreement](EULA.md)
