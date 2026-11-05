@@ -80,10 +80,11 @@ Scroll Brake proudly stands on the shoulders of the open-source Android communit
 
 ## 📬 Contact & Support
 
-- **Repository**: [https://github.com/ojas-mohbansi/Scroll-Brake](https://github.com/ojas-mohbansi/Scroll-Brake)
-- **Support Email**: `ojasmohbansi+scrollbreak@gmail.com`
+- **Repository**: [@ojas-mohbansi/Scroll-Brake](https://github.com/ojas-mohbansi/Scroll-Brake)
+- **Support Email**: [ojasmohbansi+scrollbreak@gmaail.com](mailto:ojasmohbansi+scrollbreak@gmail.com)
 
 
 ## License
 
 See [LICENSE](LICENSE).
+See [End-user license agreement](EULA,md)
