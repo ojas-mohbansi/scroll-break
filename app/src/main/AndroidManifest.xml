@@ -10,7 +10,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Audio recording used exclusively for explicit Scream Challenge feature in LockChallengeActivity -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Package usage stats for Level 1 non-accessibility usage tracking -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <!-- Optional feature for compatibility -->
     <uses-feature
         android:name="android.hardware.screen.portrait"
@@ -46,6 +49,11 @@
         <activity
             android:name=".Activities.FocusMode"
             android:exported="false" />
+
+        <activity
+            android:name=".Activities.BankingProtectionSettingsActivity"
+            android:exported="false"
+            android:label="Banking Protection" />
 
         <activity
             android:name=".Activities.HomeActivity"

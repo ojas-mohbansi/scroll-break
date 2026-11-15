@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import com.cascade26.scrollbreak.R;
+import com.cascade26.scrollbreak.Security.SensitiveAppPolicy;
 import com.cascade26.scrollbreak.Services.AppUsageAccessibilityService;
 import com.cascade26.scrollbreak.Services.FocusService;
 import com.cascade26.scrollbreak.Utils.ChallengeLockManager;
@@ -91,6 +92,11 @@ public class BlockingOverlayDisplayActivity extends AppCompatActivity {
         } else {
             currentBlockedAppName = intent.getStringExtra(AppUsageAccessibilityService.EXTRA_BLOCKED_APP_NAME);
             currentBlockedPackageName = intent.getStringExtra(AppUsageAccessibilityService.EXTRA_BLOCKED_PACKAGE_NAME);
+            if (currentBlockedPackageName != null && SensitiveAppPolicy.Companion.getInstance(this).isSensitiveApp(currentBlockedPackageName)) {
+                Log.w(TAG, "Sensitive application overlay blocked for " + currentBlockedPackageName);
+                finish();
+                return;
+            }
             isReminderOnly = intent.getBooleanExtra(AppUsageAccessibilityService.EXTRA_IS_REMINDER_ONLY, false);
             isFocus = intent.getBooleanExtra(AppUsageAccessibilityService.EXTRA_IS_FOCUS, false);
             Log.i(TAG, "processIntent: Received blocked app name: " + currentBlockedAppName + ", package: " + currentBlockedPackageName + ", isReminder: " + isReminderOnly);

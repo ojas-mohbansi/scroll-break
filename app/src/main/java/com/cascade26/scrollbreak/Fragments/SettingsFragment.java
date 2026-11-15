@@ -387,6 +387,12 @@ public class SettingsFragment extends Fragment {
 
         settingsItems.add(new SettingsItem(SettingsItem.TYPE_HEADER, "SECURITY & PROTECTION"));
 
+        settingsItems.add(new SettingsItem(992, SettingsItem.TYPE_SWITCH, "Banking & Sensitive Apps Protection",
+                "Configure protected banking/UPI apps & wellbeing operational modes",
+                R.drawable.shield, purpleIcon)
+                .setIconValues(R.drawable.shape_circle, popupBg)
+                .setOnClickListener(v -> startActivity(new Intent(requireContext(), com.cascade26.scrollbreak.Activities.BankingProtectionSettingsActivity.class))));
+
         SettingsLockManager settingsLockMgr = new SettingsLockManager(requireContext());
         boolean isSettingsLockOn = settingsLockMgr.isLockEnabled();
         settingsItems.add(new SettingsItem(990, SettingsItem.TYPE_SWITCH, "Settings Lock",

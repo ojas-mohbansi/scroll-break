@@ -3,6 +3,7 @@ package com.cascade26.scrollbreak.Services;
 import static com.cascade26.scrollbreak.Utils.Utils.isKeepAlive;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -45,6 +46,7 @@ import com.cascade26.scrollbreak.Activities.BlockingOverlayDisplayActivity;
 import com.cascade26.scrollbreak.Activities.ScrollInterventionActivity;
 import com.cascade26.scrollbreak.Activities.SessionIntentionActivity;
 import com.cascade26.scrollbreak.Activities.SessionOutcomeActivity;
+import com.cascade26.scrollbreak.Security.SensitiveAppPolicy;
 import com.cascade26.scrollbreak.Common.IntentActions;
 import com.cascade26.scrollbreak.R;
 import com.cascade26.scrollbreak.db.ScrollBreakRoomDatabase;
@@ -694,6 +696,7 @@ public class AppUsageAccessibilityService extends AccessibilityService {
         loadBlockedAppsFromDb();
         updateAddonsState();
         loadLastReminderTimestampsForAppTags();
+        updateDynamicPackageFilter();
 
         if (appTagToTimeLeftForNextSessionMs.isEmpty()) {
             long defaultUserReminderIntervalMs = (long) sharedPreferences.getInt(PREF_REMIND_DOOM_SCROLLING_MINUTES,
@@ -725,6 +728,38 @@ public class AppUsageAccessibilityService extends AccessibilityService {
                 timeLimitHandler.removeCallbacks(timeLimitCheckerRunnable);
             }
             telemetryActivePackage = null;
+        }
+    }
+
+    public void updateDynamicPackageFilter() {
+        try {
+            AccessibilityServiceInfo info = getServiceInfo();
+            if (info == null) {
+                info = new AccessibilityServiceInfo();
+            }
+            SensitiveAppPolicy sensitivePolicy = SensitiveAppPolicy.Companion.getInstance(this);
+            java.util.Set<String> targetPackages = new java.util.HashSet<>();
+
+            // Add all monitored targets
+            targetPackages.addAll(Utils.ALL_PACKAGES.keySet());
+
+            // Add custom blocked apps
+            if (customBlockedApps != null) {
+                targetPackages.addAll(customBlockedApps);
+            }
+
+            // Exclude sensitive / banking packages
+            targetPackages.removeAll(sensitivePolicy.getAllSensitivePackages());
+
+            if (!targetPackages.isEmpty()) {
+                info.packageNames = targetPackages.toArray(new String[0]);
+            } else {
+                info.packageNames = null;
+            }
+            setServiceInfo(info);
+            Log.d(TAG, "Dynamic package filter updated with " + targetPackages.size() + " target packages.");
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating dynamic package filter", e);
         }
     }
 
@@ -941,6 +976,9 @@ public class AppUsageAccessibilityService extends AccessibilityService {
             if (pm != null && !pm.isInteractive())
                 return;
             String eventPackageName = event.getPackageName() != null ? event.getPackageName().toString() : null;
+            if (eventPackageName != null && SensitiveAppPolicy.Companion.getInstance(this).isSensitiveApp(eventPackageName)) {
+                return; // Sensitive / Banking App Exclusion: Bypass node tree inspection, scroll counting, and overlays
+            }
             int eventType = event.getEventType();
 
             if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && eventPackageName != null) {
