@@ -50,6 +50,13 @@ Scroll Break requests system access only for features that need it. Grant option
 
 Accessibility and overlay access are powerful. Review the Android system permission screens and enable only the features you want to use. Scroll Break’s accessibility service uses app/package and view information to apply the configured tracking and blocker rules; it is not a general-purpose screen recorder.
 
+## Banking Compatibility & Known Limitations
+
+- **Banking & Payment App Protection:** ScrollBreak features a built-in `SensitiveAppPolicy` that automatically excludes financial apps (Google Pay, PhonePe, Paytm, BHIM, SBI, HDFC, ICICI, Axis, etc.), authenticators (Bitwarden, 1Password, Google Authenticator), and system security UI from accessibility event monitoring and overlay display.
+- **Strict Banking App Policies:** Certain strict financial applications enforce an OS-level security check that blocks execution whenever *any* third-party accessibility service is enabled on the device, regardless of package filtering or event configuration.
+- **Supported Alternative (Level 1 Mode):** For users affected by strict banking restrictions, ScrollBreak provides **Level 1 (Basic Digital Wellbeing Mode)** which uses `UsageStatsManager` (`PACKAGE_USAGE_STATS`) without requiring `AccessibilityService` to be enabled at all—ensuring 100% banking compatibility.
+- **UI Detection & Background Execution:** Scroll counting relies on app-specific view node layouts for targeted social apps. Third-party UI updates, device battery savers, and OEM background execution limits can occasionally affect continuous real-time tracking.
+
 ## Privacy and data
 
 Usage counters, settings, habits, tasks, progression, and session outcome records are stored locally on the device. The app does not require an account for these features. Android device backups and the app’s own backup/restore flow may copy local data if you enable or use them. Scroll Break does not claim that local storage is encrypted against device-level access; use Android’s device security and backup controls accordingly.
